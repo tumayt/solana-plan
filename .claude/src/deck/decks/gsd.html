@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Get Shit Done (GSD)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+[data-theme="dark"] {
+  --bg: #0a0a0a;
+  --text: #e5e5e5;
+  --text-dim: #999;
+  --text-muted: #666;
+  --accent: #4b9328;
+  --accent-light: #78AD59;
+  --border: #1a1a1a;
+  --border-light: #252525;
+  --surface: #111;
+  --toggle-bg: #1a1a1a;
+  --dot-inactive: #252525;
+  --code-bg: #111;
+  --code-text: #78AD59;
+  --table-stripe: rgba(255,255,255,0.02);
+  --risk-bg: rgba(17, 17, 17, 0.9);
+  --blue: #2a5a8a;
+  --blue-light: #3a7ab8;
+  --slide-bg-image: url('cambrian_slides_background_dark.svg');
+  --slide-bg-size: cover;
+  --slide-bg-repeat: no-repeat;
+  --slide-content-overlay: rgba(10, 10, 10, 0.85);
+  --card-border: #333;
+}
+[data-theme="light"] {
+  --bg: #fafaf8;
+  --text: #11181c;
+  --text-dim: #57606a;
+  --text-muted: #8b949e;
+  --accent: #4b9328;
+  --accent-light: #3b7120;
+  --border: #e8e8e4;
+  --border-light: #d8d8d4;
+  --surface: #f0efe8;
+  --toggle-bg: #e8e8e4;
+  --dot-inactive: #d0d0c8;
+  --code-bg: #f0efe8;
+  --code-text: #3b7120;
+  --table-stripe: rgba(0,0,0,0.02);
+  --risk-bg: rgba(245, 245, 240, 0.95);
+  --blue: #2a5a8a;
+  --blue-light: #1e4a72;
+  --slide-bg-image: url('cambrian_bg_light.jpg');
+  --slide-bg-size: cover;
+  --slide-bg-repeat: no-repeat;
+  --slide-content-overlay: rgba(247, 246, 240, 0.65);
+  --card-border: var(--border);
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'Figtree', -apple-system, sans-serif;
+  overflow: hidden; height: 100vh; width: 100vw;
+  display: flex; align-items: center; justify-content: center;
+  cursor: default; -webkit-font-smoothing: antialiased;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+.toolbar {
+  position: fixed; top: 20px; right: 24px; z-index: 200;
+  display: flex; align-items: center; gap: 10px;
+}
+.toolbar-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--toggle-bg); border: 1px solid var(--border-light);
+  border-radius: 24px; padding: 6px 14px; cursor: pointer;
+  transition: all 0.3s ease; user-select: none;
+}
+.toolbar-btn:hover { border-color: var(--accent); }
+.toolbar-btn .icon { font-size: 16px; color: var(--text-muted); }
+[data-theme="dark"] .toolbar-btn .icon-sun { display: none; }
+[data-theme="dark"] .toolbar-btn .icon-moon { display: inline; }
+[data-theme="light"] .toolbar-btn .icon-sun { display: inline; }
+[data-theme="light"] .toolbar-btn .icon-moon { display: none; }
+.toolbar-btn .label-text {
+  font-size: 11px; font-weight: 500; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--text-muted);
+  font-family: 'IBM Plex Mono', monospace;
+}
+.toolbar-btn:hover .icon { color: var(--accent); }
+.toolbar-btn .export-icon {
+  font-size: 13px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; font-weight: 600;
+}
+.toolbar-btn:hover .export-icon { color: var(--accent); }
+.toolbar-btn.copied { border-color: var(--accent); }
+.toolbar-btn.copied .label-text { color: var(--accent); }
+.export-wrapper { position: relative; }
+.deck-container { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; }
+.click-zone { position: fixed; top: 0; bottom: 0; width: 50%; z-index: 150; cursor: pointer; }
+.click-zone.left { left: 0; }
+.click-zone.right { right: 0; }
+.slide-frame {
+  width: min(96vw, 177.78vh); height: min(54vw, 100vh);
+  max-width: 1440px; max-height: 810px;
+  position: relative; overflow: hidden; z-index: 60;
+  background-image: var(--slide-bg-image);
+  background-size: var(--slide-bg-size);
+  background-position: center;
+  background-repeat: var(--slide-bg-repeat);
+  border-radius: 8px;
+}
+.slide-frame::before {
+  content: ''; position: absolute; inset: 0; z-index: 1;
+  background: var(--slide-content-overlay);
+  border-radius: 8px;
+  pointer-events: none;
+  transition: background 0.4s ease;
+}
+.slide {
+  position: absolute; inset: 0; padding: 48px 72px; z-index: 2;
+  display: flex; flex-direction: column; justify-content: center;
+  opacity: 0; transition: opacity 0.45s ease; pointer-events: none;
+}
+.slide.active { opacity: 1; pointer-events: auto; }
+.slide .fragment { opacity: 0; transform: translateY(16px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.slide.active .fragment.visible { opacity: 1; transform: translateY(0); }
+
+/* Typography */
+h1 { font-size: 68px; font-weight: 600; letter-spacing: -2px; line-height: 1.1; margin-bottom: 16px; }
+h2 { font-size: 52px; font-weight: 600; letter-spacing: -1.5px; line-height: 1.15; margin-bottom: 28px; }
+h3 { font-size: 32px; font-weight: 500; margin-bottom: 12px; color: var(--accent); transition: color 0.4s ease; }
+.subtitle { font-size: 30px; color: var(--text-dim); font-weight: 300; letter-spacing: 0.5px; }
+.label { font-size: 18px; font-weight: 500; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 10px; }
+.big-number { font-family: 'IBM Plex Mono', monospace; font-size: 88px; font-weight: 600; color: var(--accent); line-height: 1; }
+.big-number.mid { font-size: 68px; }
+.stat-label { font-size: 24px; color: var(--text-dim); margin-top: 8px; font-weight: 400; }
+.stat-item { display: flex; flex-direction: column; }
+.stat-grid { display: grid; gap: 40px; }
+.stat-grid.two-col { grid-template-columns: 1fr 1fr; }
+.stat-grid.three-col { grid-template-columns: 1fr 1fr 1fr; }
+ul { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+ul li { font-size: 28px; line-height: 1.45; padding-left: 24px; position: relative; color: var(--text); font-weight: 400; }
+ul li::before { content: ''; position: absolute; left: 0; top: 16px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+ul li .dim { color: var(--text-dim); }
+ul li strong { font-weight: 600; }
+ul.dim-list li::before { background: var(--text-muted); }
+ul.dim-list li { color: var(--text-dim); }
+.green { color: var(--accent); }
+.green-light { color: var(--accent-light); }
+.mono { font-family: 'IBM Plex Mono', monospace; }
+table { width: 100%; border-collapse: collapse; font-size: 22px; }
+table th { text-align: left; padding: 10px 14px; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); border-bottom: 1px solid var(--border-light); white-space: nowrap; }
+table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-dim); font-weight: 400; line-height: 1.4; vertical-align: top; }
+table tr:last-child td { border-bottom: none; }
+table td:first-child { color: var(--text); font-weight: 500; font-family: 'IBM Plex Mono', monospace; font-size: 18px; }
+.columns { display: grid; gap: 48px; }
+.columns.two { grid-template-columns: 1fr 1fr; }
+.progress { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; z-index: 200; align-items: flex-end; }
+.progress .dot-wrapper { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; padding: 4px 5px; position: relative; }
+.progress .dot-label { font-family: 'IBM Plex Mono', monospace; font-size: 8px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.5px; white-space: nowrap; max-width: 90px; overflow: hidden; text-overflow: ellipsis; text-align: center; transition: all 0.25s ease; }
+.progress .dot-wrapper:hover .dot-label { color: var(--text-dim); }
+.progress .dot-wrapper.active .dot-label { color: var(--accent); font-weight: 600; }
+.progress .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dot-inactive); transition: all 0.3s ease; }
+.progress .dot-wrapper:hover .dot { background: var(--text-muted); }
+.progress .dot-wrapper.active .dot { background: var(--accent); box-shadow: 0 0 8px rgba(75,147,40,0.4); }
+.slide-counter { position: fixed; bottom: 28px; right: 40px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); z-index: 100; }
+.divider { width: 48px; height: 2px; background: var(--accent); margin: 20px 0; }
+.risk-item { padding: 18px 22px; border: 1px solid var(--card-border); border-radius: 8px; font-size: 24px; line-height: 1.45; color: var(--text-dim); background: var(--risk-bg); }
+.risk-item strong { color: var(--text); font-weight: 600; }
+.risk-item.positive { border-color: var(--accent); background: rgba(75,147,40,0.05); }
+.risk-item.negative { border-color: #c9873a; background: rgba(201,135,58,0.05); }
+.risk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.footnote { font-size: 20px; color: var(--text-muted); margin-top: 24px; }
+.code-block { font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: var(--code-text); background: var(--code-bg); padding: 8px 14px; border-radius: 6px; display: block; transition: background 0.4s ease, color 0.4s ease; }
+.code-block.large { font-size: 32px; padding: 16px 24px; text-align: center; }
+.status-card { padding: 14px 18px; border: 1px solid var(--card-border); border-radius: 8px; margin-bottom: 10px; background: var(--risk-bg); }
+.status-card.blocker { border-color: #c9873a; background: rgba(201,135,58,0.05); }
+.status-card.positive { border-color: var(--accent); background: rgba(75,147,40,0.05); }
+.status-card-label { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 6px; }
+.status-card.blocker .status-card-label { color: #c9873a; }
+.status-card.positive .status-card-label { color: var(--accent); }
+.status-card p { font-size: 21px; color: var(--text-dim); line-height: 1.4; }
+
+/* H-flow diagram */
+.h-flow { display: flex; align-items: flex-start; margin: 20px 0; }
+.h-flow-step { flex: 1; text-align: center; padding: 0 10px; position: relative; }
+.h-flow-step .step-num {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--accent); color: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 22px;
+  margin: 0 auto 14px; position: relative; z-index: 2;
+  box-shadow: 0 0 0 4px var(--bg), 0 0 0 6px rgba(75,147,40,0.25);
+  transition: background 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+}
+.h-flow-step:not(:last-child)::after {
+  content: ''; position: absolute; top: 26px; left: calc(50% + 30px);
+  width: calc(100% - 60px); height: 2px;
+  background: var(--accent); opacity: 0.35; z-index: 1;
+}
+.h-flow-step .step-title { font-size: 24px; font-weight: 600; margin-bottom: 6px; line-height: 1.2; }
+.h-flow-step .step-desc { font-size: 19px; color: var(--text-dim); line-height: 1.35; }
+.h-flow-step .step-code {
+  font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: var(--code-text);
+  background: var(--code-bg); padding: 4px 10px; border-radius: 4px;
+  display: inline-block; margin-top: 8px; transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* Export dropdown */
+.export-dropdown { position: absolute; top: calc(100% + 6px); right: 0; z-index: 201; background: var(--bg); border: 1px solid var(--border-light); border-radius: 10px; padding: 6px 0; min-width: 240px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transform: translateY(-8px); transition: all 0.2s ease; }
+.export-dropdown.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+.export-dropdown-item { padding: 10px 18px; font-size: 13px; color: var(--text-dim); cursor: pointer; transition: all 0.15s ease; }
+.export-dropdown-item:hover { background: rgba(75,147,40,0.08); color: var(--text); }
+.export-dropdown-item .item-hint { font-size: 10px; color: var(--text-muted); margin-left: 4px; font-family: 'IBM Plex Mono', monospace; }
+.export-divider { height: 1px; background: var(--border); margin: 6px 18px; }
+
+/* Edit / Present mode */
+body.edit-mode .click-zone { pointer-events: none; }
+body.edit-mode [contenteditable]:hover { outline: 1px dashed var(--accent); outline-offset: 2px; }
+body.edit-mode [contenteditable]:focus { outline: 2px solid var(--accent); outline-offset: 2px; background: rgba(75,147,40,0.04); border-radius: 4px; }
+body.present-mode #modeToggle,
+body.present-mode .export-wrapper,
+body.present-mode .progress,
+body.present-mode .slide-counter,
+body.present-mode .slide-controls { display: none !important; }
+body.present-mode .slide-frame { max-width: 100vw; max-height: 100vh; width: 100vw; height: 100vh; border-radius: 0; }
+
+/* Slide controls */
+.slide-controls {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  z-index: 300; display: none; align-items: center; gap: 8px;
+}
+body.edit-mode .slide-controls { display: flex; }
+.slide-controls .toolbar-btn { padding: 4px 12px; }
+.slide-controls .toolbar-btn.danger { border-color: rgba(201,135,58,0.4); }
+.slide-controls .toolbar-btn.danger:hover { border-color: #c9873a; background: rgba(201,135,58,0.1); }
+.slide-controls .toolbar-btn.danger .icon,
+.slide-controls .toolbar-btn.danger .label-text { color: #c9873a; }
+.slide-controls .slide-info {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  color: var(--text-muted); letter-spacing: 0.5px; padding: 0 6px;
+  text-transform: uppercase;
+}
+
+/* Hidden slides */
+body.edit-mode .slide.slide-hidden.active { outline: 2px dashed rgba(201,135,58,0.4); outline-offset: -2px; }
+.progress .dot-wrapper.hidden .dot { background: var(--text-muted); opacity: 0.3; }
+.progress .dot-wrapper.hidden .dot-label { text-decoration: line-through; opacity: 0.4; }
+.progress .dot-wrapper.hidden.active .dot { background: #c9873a; opacity: 0.6; box-shadow: none; }
+.progress .dot-wrapper.hidden.active .dot-label { color: #c9873a; opacity: 0.7; text-decoration: line-through; }
+
+@media print {
+  .toolbar, .export-dropdown, .progress, .slide-counter, .click-zone, .slide-controls { display: none !important; }
+  body { overflow: visible !important; height: auto !important; width: auto !important; display: block !important; background: white !important; color: #111 !important; }
+  .deck-container { width: auto !important; height: auto !important; display: block !important; position: static !important; }
+  .slide-frame { width: 100% !important; height: auto !important; max-width: none !important; max-height: none !important; position: static !important; overflow: visible !important; }
+  .slide .fragment { opacity: 1 !important; transform: none !important; }
+  body.print-all .slide { position: static !important; opacity: 1 !important; pointer-events: auto !important; display: flex !important; page-break-after: always; padding: 48px !important; min-height: 90vh; }
+  body.print-all .slide:last-child { page-break-after: auto; }
+  body.print-current .slide { display: none !important; }
+  body.print-current .slide.active { display: flex !important; position: static !important; opacity: 1 !important; padding: 48px !important; min-height: 90vh; }
+  h1, h2, h3 { color: #111 !important; }
+  p, li, td, .status-card p { color: #444 !important; }
+}
+</style>
+</head>
+<body>
+<div class="toolbar" id="toolbar">
+  <div class="toolbar-btn" id="modeToggle" onclick="toggleMode()">
+    <span class="icon" id="modeIcon">&#9998;</span>
+    <span class="label-text" id="modeLabel">edit</span>
+  </div>
+  <div class="export-wrapper">
+    <div class="toolbar-btn" id="exportBtn" onclick="toggleExport(event)">
+      <span class="icon">&darr;</span>
+      <span class="label-text" id="exportLabel">export</span>
+    </div>
+    <div class="export-dropdown" id="exportDropdown">
+      <div class="export-dropdown-item" onclick="exportMarkdown('current')">Copy this slide as Markdown <span class="item-hint">clipboard</span></div>
+      <div class="export-dropdown-item" onclick="exportMarkdown('all')">Copy all slides as Markdown <span class="item-hint">clipboard</span></div>
+      <div class="export-divider"></div>
+      <div class="export-dropdown-item" onclick="exportPDF('current')">Print this slide as PDF <span class="item-hint">&#8984;P</span></div>
+      <div class="export-dropdown-item" onclick="exportPDF('all')">Print all slides as PDF <span class="item-hint">&#8984;P</span></div>
+    </div>
+  </div>
+  <div class="toolbar-btn" id="themeToggle" onclick="toggleTheme()">
+    <span class="icon icon-moon">&#9790;</span>
+    <span class="icon icon-sun">&#9788;</span>
+    <span class="label-text" id="themeLabel">dark</span>
+  </div>
+</div>
+<div class="slide-controls" id="slideControls">
+  <span class="slide-info" id="slideInfo">Slide 1</span>
+  <div class="toolbar-btn" id="hideSlideBtn" onclick="toggleHideSlide()">
+    <span class="icon" id="hideIcon">&#128065;</span>
+    <span class="label-text" id="hideLabel">hide</span>
+  </div>
+  <div class="toolbar-btn danger" id="deleteSlideBtn" onclick="deleteCurrentSlide()" style="display:none;">
+    <span class="icon">&#128465;</span>
+    <span class="label-text">delete</span>
+  </div>
+</div>
+<div class="click-zone left" onclick="prev()"></div>
+<div class="click-zone right" onclick="next()"></div>
+
+<div class="deck-container">
+  <div class="slide-frame">
+
+    <!-- ===== SLIDE 1: What is Meta-Prompting? ===== -->
+    <div class="slide active" data-slide="0" data-title="Meta-Prompting">
+      <div>
+        <p class="label fragment">Context</p>
+        <h1 class="fragment" style="letter-spacing: -2.5px; margin-bottom: 20px;">Get Shit Done<br><span class="green">(GSD)</span></h1>
+        <div class="divider fragment"></div>
+        <p class="subtitle fragment" style="margin-bottom: 32px;">A <strong>meta-prompting</strong> system for AI development</p>
+        <div class="columns two fragment" style="gap: 32px;">
+          <div class="risk-item">
+            <strong>Normal prompting</strong><br>
+            <span style="color: var(--text-dim);">You write every prompt yourself, one at a time, in a single session</span>
+          </div>
+          <div class="risk-item positive">
+            <strong>Meta-prompting (workflows like GSD)</strong><br>
+            <span style="color: var(--text-dim);">A system generates, sequences, and manages prompts for you. Each task gets a fresh session with structured context</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SLIDE 2: What is GSD? ===== -->
+    <div class="slide" data-slide="1" data-title="What is GSD?">
+      <div>
+        <h2 class="fragment">What is GSD?</h2>
+        <p class="subtitle fragment" style="margin-bottom: 32px;">A meta-prompting system that structures AI development<br>into reliable, repeatable phases.</p>
+        <div class="h-flow fragment">
+          <div class="h-flow-step">
+            <div class="step-num">1</div>
+            <div class="step-title">Init</div>
+            <div class="step-desc">Set up project</div>
+          </div>
+          <div class="h-flow-step">
+            <div class="step-num">2</div>
+            <div class="step-title">Discuss</div>
+            <div class="step-desc">Surface gray areas</div>
+          </div>
+          <div class="h-flow-step">
+            <div class="step-num">3</div>
+            <div class="step-title">Plan</div>
+            <div class="step-desc">Atomic task plans</div>
+          </div>
+          <div class="h-flow-step">
+            <div class="step-num">4</div>
+            <div class="step-title">Execute</div>
+            <div class="step-desc">Parallel fresh context</div>
+          </div>
+          <div class="h-flow-step">
+            <div class="step-num">5</div>
+            <div class="step-title">Verify</div>
+            <div class="step-desc">Auto-fix & confirm</div>
+          </div>
+        </div>
+        <div class="fragment" style="margin-top: 32px;">
+          <div class="risk-item positive">
+            <strong>Atomic git commits</strong> per completed task. Works with Claude Code, Codex, Cursor, Windsurf, etc.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SLIDE 3: Commands ===== -->
+    <div class="slide" data-slide="2" data-title="Commands">
+      <div>
+        <h2 class="fragment">Commands</h2>
+        <div class="columns two fragment" style="gap: 32px;">
+          <div>
+            <h3 style="font-size: 22px; margin-bottom: 14px;">Core Workflow</h3>
+            <table>
+              <tbody>
+                <tr><td>/gsd:new-project</td><td>Questions, research, requirements, roadmap</td></tr>
+                <tr><td>/gsd:discuss-phase</td><td>Capture decisions before planning</td></tr>
+                <tr><td>/gsd:plan-phase</td><td>Research + plan + verify for a phase</td></tr>
+                <tr><td>/gsd:execute-phase</td><td>Run plans in parallel waves</td></tr>
+                <tr><td>/gsd:verify-work</td><td>User acceptance testing</td></tr>
+                <tr><td>/gsd:ship</td><td>Create PR with auto-generated body</td></tr>
+                <tr><td>/gsd:next</td><td>Auto-advance to next workflow step</td></tr>
+                <tr><td>/gsd:fast</td><td>Inline trivial tasks, skip planning</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h3 style="font-size: 22px; margin-bottom: 14px;">Navigation &amp; Quality</h3>
+            <table>
+              <tbody>
+                <tr><td>/gsd:progress</td><td>Where am I? What's next?</td></tr>
+                <tr><td>/gsd:map-codebase</td><td>Analyze existing codebase</td></tr>
+                <tr><td>/gsd:review</td><td>Cross-AI peer review</td></tr>
+                <tr><td>/gsd:debug</td><td>Systematic debugging with state</td></tr>
+                <tr><td>/gsd:workstreams</td><td>Manage parallel workstreams</td></tr>
+                <tr><td>/gsd:pause-work</td><td>Create handoff for next session</td></tr>
+                <tr><td>/gsd:resume-work</td><td>Restore from last session</td></tr>
+                <tr><td>/gsd:do</td><td>Route freeform text to right command</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="footnote fragment" style="text-align: center; margin-top: 16px;"><span class="mono" style="color: var(--text);">github.com/gsd-build/get-shit-done</span> &nbsp;&mdash;&nbsp; <span class="mono green">npx get-shit-done-cc@latest</span></p>
+      </div>
+    </div>
+
+  </div><!-- /slide-frame -->
+</div><!-- /deck-container -->
+
+<div class="progress" id="progress"></div>
+<div class="slide-counter" id="counter"></div>
+
+<script>
+(function() {
+  let slides = Array.from(document.querySelectorAll('.slide'));
+  let totalSlides = slides.length;
+  let current = 0;
+  let fragmentQueue = [];
+  let fragmentIndex = 0;
+  const hiddenSlides = new Set();
+  const storageKey = 'deck-hidden-' + document.title.replace(/[^a-zA-Z0-9]/g, '-');
+
+  function saveHidden() { localStorage.setItem(storageKey, JSON.stringify([...hiddenSlides])); }
+  function loadHidden() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      saved.forEach(i => { if (i >= 0 && i < totalSlides) { hiddenSlides.add(i); slides[i].classList.add('slide-hidden'); } });
+    } catch(e) {}
+  }
+  loadHidden();
+
+  const editsKey = 'deck-edits-' + document.title.replace(/[^a-zA-Z0-9]/g, '-');
+
+  function saveEdits() {
+    const data = {};
+    slides.forEach((s, i) => {
+      const slideEdits = {};
+      s.querySelectorAll('[data-edit-id]').forEach(el => {
+        slideEdits[el.getAttribute('data-edit-id')] = el.innerHTML;
+      });
+      if (Object.keys(slideEdits).length) data[i] = slideEdits;
+    });
+    localStorage.setItem(editsKey, JSON.stringify(data));
+  }
+
+  function loadEdits() {
+    try {
+      const data = JSON.parse(localStorage.getItem(editsKey) || '{}');
+      Object.keys(data).forEach(slideIdx => {
+        const i = parseInt(slideIdx);
+        if (i >= 0 && i < totalSlides) {
+          Object.keys(data[slideIdx]).forEach(editId => {
+            const el = slides[i].querySelector('[data-edit-id="' + editId + '"]');
+            if (el) el.innerHTML = data[slideIdx][editId];
+          });
+        }
+      });
+    } catch(e) {}
+  }
+
+  (function tagEditables() {
+    const editableSelectors = 'h1, h2, h3, p, li, td, th, .subtitle, .label, .stat-label, .big-number, .footnote, .status-card-label, code, .step-title, .step-desc';
+    slides.forEach((s, si) => {
+      let counter = 0;
+      s.querySelectorAll(editableSelectors).forEach(el => {
+        el.setAttribute('data-edit-id', 's' + si + '-e' + counter);
+        counter++;
+      });
+    });
+  })();
+  loadEdits();
+
+  document.addEventListener('blur', function(e) {
+    if (e.target && e.target.getAttribute && e.target.getAttribute('data-edit-id')) {
+      saveEdits();
+    }
+  }, true);
+
+  const progressEl = document.getElementById('progress');
+
+  function buildProgressDots() {
+    progressEl.innerHTML = '';
+    for (let i = 0; i < totalSlides; i++) {
+      const slideEl = slides[i];
+      let title = slideEl.getAttribute('data-title') || '';
+      if (!title) {
+        const h2 = slideEl.querySelector('h2');
+        const h1 = slideEl.querySelector('h1');
+        const lbl = slideEl.querySelector('.label');
+        if (h2) title = h2.textContent.trim().split('\n')[0];
+        else if (h1) title = h1.textContent.trim().split('\n')[0];
+        else if (lbl) title = lbl.textContent.trim();
+        if (title.length > 16) title = title.substring(0, 14) + '\u2026';
+      }
+      const wrapper = document.createElement('div');
+      wrapper.className = 'dot-wrapper' + (i === current ? ' active' : '') + (hiddenSlides.has(i) ? ' hidden' : '');
+      const labelEl = document.createElement('div');
+      labelEl.className = 'dot-label';
+      labelEl.textContent = title;
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      wrapper.appendChild(labelEl);
+      wrapper.appendChild(dot);
+      wrapper.addEventListener('click', ((idx) => (e) => { e.stopPropagation(); goToSlide(idx); })(i));
+      progressEl.appendChild(wrapper);
+    }
+  }
+  buildProgressDots();
+
+  function updateCounter() {
+    if (hiddenSlides.has(current)) {
+      document.getElementById('counter').textContent = (current + 1) + ' / ' + totalSlides + ' [hidden]';
+    } else {
+      let visibleIdx = 0;
+      for (let i = 0; i <= current; i++) { if (!hiddenSlides.has(i)) visibleIdx++; }
+      document.getElementById('counter').textContent = visibleIdx + ' / ' + (totalSlides - hiddenSlides.size);
+    }
+  }
+  function buildFragmentQueue(slideEl) { fragmentQueue = Array.from(slideEl.querySelectorAll('.fragment')); fragmentIndex = 0; fragmentQueue.forEach(f => f.classList.remove('visible')); }
+  function showAllFragments(slideEl) { const frags = slideEl.querySelectorAll('.fragment'); frags.forEach(f => f.classList.add('visible')); fragmentQueue = Array.from(frags); fragmentIndex = fragmentQueue.length; }
+  function revealNextFragment() { if (fragmentIndex < fragmentQueue.length) { fragmentQueue[fragmentIndex].classList.add('visible'); fragmentIndex++; return true; } return false; }
+  function hideLastFragment() { if (fragmentIndex > 0) { fragmentIndex--; fragmentQueue[fragmentIndex].classList.remove('visible'); return true; } return false; }
+
+  function findVisibleSlide(from, dir) {
+    let idx = from + dir;
+    while (idx >= 0 && idx < totalSlides) {
+      if (!hiddenSlides.has(idx)) return idx;
+      idx += dir;
+    }
+    return -1;
+  }
+
+  function autoScaleSlide(slideEl) {
+    const inner = slideEl.children[0];
+    if (!inner) return;
+    inner.style.zoom = '1';
+    const style = getComputedStyle(slideEl);
+    const availH = slideEl.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+    const naturalH = inner.scrollHeight;
+    if (naturalH <= 0 || availH <= 0) return;
+    let scale = availH / naturalH;
+    if (scale > 1) scale = 1 + (scale - 1) * 0.5;
+    scale = Math.min(1.25, Math.max(0.55, scale));
+    if (scale > 0.97 && scale < 1.03) { inner.style.zoom = ''; return; }
+    inner.style.zoom = scale;
+  }
+
+  function goToSlide(index) {
+    if (index < 0 || index >= totalSlides || index === current) return;
+    slides[current].querySelectorAll('.fragment').forEach(f => f.classList.remove('visible'));
+    slides[current].classList.remove('active');
+    progressEl.children[current].classList.remove('active');
+    current = index;
+    slides[current].classList.add('active');
+    progressEl.children[current].classList.add('active');
+    updateCounter();
+    buildFragmentQueue(slides[current]);
+    updateSlideControls();
+    autoScaleSlide(slides[current]);
+  }
+
+  function next() {
+    if (fragmentIndex < fragmentQueue.length) { showAllFragments(slides[current]); return; }
+    const nextIdx = (currentMode === 'edit') ? current + 1 : findVisibleSlide(current, 1);
+    if (nextIdx >= 0 && nextIdx < totalSlides) goToSlide(nextIdx);
+  }
+
+  function prev() {
+    const prevIdx = (currentMode === 'edit') ? current - 1 : findVisibleSlide(current, -1);
+    if (prevIdx >= 0) {
+      slides[current].classList.remove('active');
+      progressEl.children[current].classList.remove('active');
+      current = prevIdx;
+      slides[current].classList.add('active');
+      progressEl.children[current].classList.add('active');
+      updateCounter();
+      showAllFragments(slides[current]);
+      updateSlideControls();
+      autoScaleSlide(slides[current]);
+    }
+  }
+
+  window.next = next;
+  window.prev = prev;
+
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+  document.addEventListener('touchend', (e) => { const d = touchStartX - e.changedTouches[0].screenX; if (Math.abs(d) > 50) { d > 0 ? next() : prev(); } });
+
+  window.toggleTheme = function() {
+    const html = document.documentElement;
+    const cur = html.getAttribute('data-theme');
+    const nxt = cur === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', nxt);
+    document.getElementById('themeLabel').textContent = nxt;
+    localStorage.setItem('cambrian-deck-theme', nxt);
+  };
+  const savedTheme = localStorage.getItem('cambrian-deck-theme');
+  if (savedTheme) { document.documentElement.setAttribute('data-theme', savedTheme); document.getElementById('themeLabel').textContent = savedTheme; }
+
+  updateCounter();
+  buildFragmentQueue(slides[0]);
+  autoScaleSlide(slides[0]);
+  setTimeout(() => { revealNextFragment(); let i = 1; const iv = setInterval(() => { if (!revealNextFragment()) clearInterval(iv); i++; }, 120); }, 300);
+
+  window.addEventListener('resize', () => { autoScaleSlide(slides[current]); });
+
+  const exportBtn = document.getElementById('exportBtn');
+  const exportDropdown = document.getElementById('exportDropdown');
+  const exportLabel = document.getElementById('exportLabel');
+  window.toggleExport = function(e) { e.stopPropagation(); exportDropdown.classList.toggle('open'); };
+  document.addEventListener('click', (e) => {
+    if (!exportBtn.contains(e.target) && !exportDropdown.contains(e.target)) exportDropdown.classList.remove('open');
+  });
+
+  function slideToMarkdown(slideEl) {
+    const lines = [];
+    const label = slideEl.querySelector('.label');
+    const h1 = slideEl.querySelector('h1');
+    const h2 = slideEl.querySelector('h2');
+    if (label) lines.push('*' + label.textContent.trim() + '*');
+    if (h1) lines.push('# ' + h1.textContent.trim().replace(/\s+/g, ' '));
+    else if (h2) lines.push('## ' + h2.textContent.trim().replace(/\s+/g, ' '));
+    slideEl.querySelectorAll(':scope > div > p, :scope > div > div > p.subtitle').forEach(p => {
+      if (p.closest('.status-card, .risk-item')) return;
+      const text = p.textContent.trim();
+      if (text) lines.push('', text);
+    });
+    slideEl.querySelectorAll('table').forEach(table => {
+      lines.push('');
+      const headers = [];
+      table.querySelectorAll('th').forEach(th => headers.push(th.textContent.trim()));
+      if (headers.length) { lines.push('| ' + headers.join(' | ') + ' |'); lines.push('| ' + headers.map(() => '---').join(' | ') + ' |'); }
+      table.querySelectorAll('tbody tr').forEach(tr => {
+        const cells = [];
+        tr.querySelectorAll('td').forEach(td => cells.push(td.textContent.trim().replace(/\s+/g, ' ')));
+        if (cells.length) lines.push('| ' + cells.join(' | ') + ' |');
+      });
+    });
+    slideEl.querySelectorAll('ul').forEach(ul => {
+      if (ul.closest('.status-card, .risk-item')) return;
+      lines.push('');
+      ul.querySelectorAll(':scope > li').forEach(li => lines.push('- ' + li.textContent.trim().replace(/\s+/g, ' ')));
+    });
+    slideEl.querySelectorAll('.status-card').forEach(card => {
+      const lbl = card.querySelector('.status-card-label')?.textContent.trim() || '';
+      const body = card.querySelector('p')?.textContent.trim() || '';
+      lines.push('', (card.classList.contains('blocker') ? '! ' : '+ ') + '**' + lbl + ':** ' + body);
+    });
+    return lines.join('\n').trim();
+  }
+
+  window.exportMarkdown = function(scope) {
+    exportDropdown.classList.remove('open');
+    let md = '';
+    if (scope === 'current') { md = slideToMarkdown(slides[current]); }
+    else { const parts = []; slides.forEach((s, i) => { if (!hiddenSlides.has(i)) parts.push(slideToMarkdown(s)); }); md = parts.join('\n\n---\n\n'); }
+    navigator.clipboard.writeText(md).then(() => { exportBtn.classList.add('copied'); exportLabel.textContent = 'copied!'; setTimeout(() => { exportBtn.classList.remove('copied'); exportLabel.textContent = 'export'; }, 1500); });
+  };
+  window.exportPDF = function(scope) {
+    exportDropdown.classList.remove('open');
+    const cls = scope === 'current' ? 'print-current' : 'print-all';
+    document.body.classList.add(cls);
+    if (scope === 'all') { slides.forEach((s, i) => { if (!hiddenSlides.has(i)) s.querySelectorAll('.fragment').forEach(f => f.classList.add('visible')); }); }
+    else { slides[current].querySelectorAll('.fragment').forEach(f => f.classList.add('visible')); }
+    window.print();
+    window.addEventListener('afterprint', () => { document.body.classList.remove(cls); buildFragmentQueue(slides[current]); showAllFragments(slides[current]); }, { once: true });
+  };
+
+  let currentMode = 'view';
+  const editableSelectors = 'h1, h2, h3, p, li, td, th, .subtitle, .label, .stat-label, .big-number, .footnote, .status-card-label, code, .step-title, .step-desc';
+
+  function setEditables(editable) {
+    slides.forEach(s => {
+      s.querySelectorAll(editableSelectors).forEach(el => {
+        if (editable) { el.setAttribute('contenteditable', 'true'); el.setAttribute('spellcheck', 'false'); }
+        else { el.removeAttribute('contenteditable'); el.removeAttribute('spellcheck'); }
+      });
+    });
+  }
+
+  function enterEditMode() {
+    currentMode = 'edit';
+    document.body.classList.add('edit-mode');
+    document.body.classList.remove('present-mode');
+    if (document.fullscreenElement) document.exitFullscreen();
+    setEditables(true);
+    showAllFragments(slides[current]);
+    document.getElementById('modeIcon').innerHTML = '&#9654;';
+    document.getElementById('modeLabel').textContent = 'present';
+    updateSlideControls();
+  }
+
+  function enterPresentMode() {
+    currentMode = 'present';
+    document.body.classList.remove('edit-mode');
+    document.body.classList.add('present-mode');
+    setEditables(false);
+    if (hiddenSlides.has(current)) {
+      const vis = findVisibleSlide(current, 1);
+      if (vis >= 0) goToSlide(vis);
+      else { const vis2 = findVisibleSlide(current, -1); if (vis2 >= 0) goToSlide(vis2); }
+    }
+    document.documentElement.requestFullscreen().catch(() => {});
+    document.getElementById('modeIcon').innerHTML = '&#9998;';
+    document.getElementById('modeLabel').textContent = 'edit';
+    setTimeout(() => autoScaleSlide(slides[current]), 100);
+  }
+
+  window.toggleMode = function() {
+    if (currentMode === 'view') enterEditMode();
+    else if (currentMode === 'edit') enterPresentMode();
+    else enterEditMode();
+  };
+
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && currentMode === 'present') {
+      currentMode = 'view';
+      document.body.classList.remove('present-mode');
+      document.getElementById('modeIcon').innerHTML = '&#9998;';
+      document.getElementById('modeLabel').textContent = 'edit';
+    }
+    setTimeout(() => autoScaleSlide(slides[current]), 100);
+  });
+
+  function updateSlideControls() {
+    const info = document.getElementById('slideInfo');
+    const hideIcon = document.getElementById('hideIcon');
+    const hideLabel = document.getElementById('hideLabel');
+    const deleteBtn = document.getElementById('deleteSlideBtn');
+    const isHidden = hiddenSlides.has(current);
+    info.textContent = 'Slide ' + (current + 1) + ' / ' + totalSlides;
+    if (isHidden) {
+      hideIcon.textContent = '\u25C9';
+      hideLabel.textContent = 'show';
+      deleteBtn.style.display = 'flex';
+    } else {
+      hideIcon.textContent = '\u25CE';
+      hideLabel.textContent = 'hide';
+      deleteBtn.style.display = 'none';
+    }
+  }
+  updateSlideControls();
+
+  window.toggleHideSlide = function() {
+    if (hiddenSlides.has(current)) {
+      hiddenSlides.delete(current);
+      slides[current].classList.remove('slide-hidden');
+      progressEl.children[current].classList.remove('hidden');
+    } else {
+      hiddenSlides.add(current);
+      slides[current].classList.add('slide-hidden');
+      progressEl.children[current].classList.add('hidden');
+    }
+    saveHidden();
+    updateSlideControls();
+    updateCounter();
+  };
+
+  window.deleteCurrentSlide = function() {
+    if (!confirm('Permanently delete slide ' + (current + 1) + '?\nThis cannot be undone.')) return;
+    const idx = current;
+    slides[idx].remove();
+    hiddenSlides.delete(idx);
+    const shifted = new Set();
+    hiddenSlides.forEach(h => { shifted.add(h > idx ? h - 1 : h); });
+    hiddenSlides.clear();
+    shifted.forEach(h => hiddenSlides.add(h));
+    slides = Array.from(document.querySelectorAll('.slide'));
+    totalSlides = slides.length;
+    if (totalSlides === 0) return;
+    if (current >= totalSlides) current = totalSlides - 1;
+    slides[current].classList.add('active');
+    saveHidden();
+    saveEdits();
+    buildProgressDots();
+    updateCounter();
+    buildFragmentQueue(slides[current]);
+    showAllFragments(slides[current]);
+    updateSlideControls();
+  };
+
+  document.addEventListener('keydown', (e) => {
+    if (currentMode === 'edit' && document.activeElement && document.activeElement.getAttribute('contenteditable') === 'true') return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); next(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prev(); }
+    else if (e.key === 'Home') { e.preventDefault(); goToSlide(0); }
+    else if (e.key === 'End') { e.preventDefault(); goToSlide(totalSlides - 1); }
+    else if (e.key === 'e' && !e.ctrlKey && !e.metaKey) { toggleMode(); }
+  });
+})();
+</script>
+</body>
+</html>

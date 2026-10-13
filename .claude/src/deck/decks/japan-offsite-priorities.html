@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Japan Offsite Priorities</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  [data-theme="dark"] {
+    --bg: #0a0a0a;
+    --text: #e5e5e5;
+    --text-dim: #999;
+    --text-muted: #666;
+    --accent: #4b9328;
+    --accent-light: #78AD59;
+    --border: #1a1a1a;
+    --border-light: #252525;
+    --surface: #111;
+    --toggle-bg: #1a1a1a;
+    --dot-inactive: #252525;
+    --blue: #2a5a8a;
+    --blue-light: #3a7ab8;
+    --risk-bg: rgba(17, 17, 17, 0.9);
+    --slide-bg-image: url('cambrian_slides_background_dark.svg');
+    --slide-bg-size: cover;
+    --slide-bg-repeat: no-repeat;
+    --slide-content-overlay: rgba(10, 10, 10, 0.85);
+    --card-border: #333;
+  }
+
+  [data-theme="light"] {
+    --bg: #fafaf8;
+    --text: #11181c;
+    --text-dim: #57606a;
+    --text-muted: #8b949e;
+    --accent: #4b9328;
+    --accent-light: #3b7120;
+    --border: #e8e8e4;
+    --border-light: #d8d8d4;
+    --surface: #f0efe8;
+    --toggle-bg: #e8e8e4;
+    --dot-inactive: #d0d0c8;
+    --blue: #2a5a8a;
+    --blue-light: #1e4a72;
+    --risk-bg: rgba(245, 245, 240, 0.95);
+    --slide-bg-image: url('cambrian_bg_light.jpg');
+    --slide-bg-size: cover;
+    --slide-bg-repeat: no-repeat;
+    --slide-content-overlay: rgba(247, 246, 240, 0.65);
+    --card-border: var(--border);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Figtree', -apple-system, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.4s ease, color 0.4s ease;
+  }
+
+  .toolbar { position: fixed; top: 20px; right: 24px; z-index: 200; display: flex; align-items: center; gap: 10px; }
+  .toolbar-btn { display: flex; align-items: center; gap: 8px; background: var(--toggle-bg); border: 1px solid var(--border-light); border-radius: 24px; padding: 6px 14px; cursor: pointer; transition: all 0.3s ease; user-select: none; }
+  .toolbar-btn:hover { border-color: var(--accent); }
+  .toolbar-btn .icon { font-size: 16px; color: var(--text-muted); }
+  [data-theme="dark"] .toolbar-btn .icon-sun { display: none; }
+  [data-theme="dark"] .toolbar-btn .icon-moon { display: inline; }
+  [data-theme="light"] .toolbar-btn .icon-sun { display: inline; }
+  [data-theme="light"] .toolbar-btn .icon-moon { display: none; }
+  .toolbar-btn .label-text { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
+  .toolbar-btn:hover .icon { color: var(--accent); }
+  .toolbar-btn .export-icon { font-size: 13px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+  .toolbar-btn:hover .export-icon { color: var(--accent); }
+  .toolbar-btn.copied { border-color: var(--accent); }
+  .toolbar-btn.copied .label-text { color: var(--accent); }
+  .export-wrapper { position: relative; }
+
+  .deck-container {
+    width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .click-zone { position: fixed; top: 0; bottom: 0; width: 50%; z-index: 150; cursor: pointer; }
+  .click-zone.left { left: 0; }
+  .click-zone.right { right: 0; }
+  .slide-frame {
+    width: min(96vw, 177.78vh); height: min(54vw, 100vh);
+    max-width: 1440px; max-height: 810px;
+    position: relative; overflow: hidden; z-index: 60;
+    background-image: var(--slide-bg-image);
+    background-size: var(--slide-bg-size);
+    background-position: center;
+    background-repeat: var(--slide-bg-repeat);
+    border-radius: 8px;
+  }
+  .slide-frame::before {
+    content: ''; position: absolute; inset: 0; z-index: 1;
+    background: var(--slide-content-overlay);
+    border-radius: 8px;
+    pointer-events: none;
+    transition: background 0.4s ease;
+  }
+
+  .slide {
+    position: absolute; inset: 0; padding: 72px 96px; z-index: 2;
+    display: flex; flex-direction: column; justify-content: center;
+    opacity: 0; transition: opacity 0.45s ease; pointer-events: none;
+  }
+  .slide.active { opacity: 1; pointer-events: auto; }
+
+  .slide .fragment { opacity: 0; transform: translateY(16px); transition: opacity 0.5s ease, transform 0.5s ease; }
+  .slide .fragment.visible { opacity: 1; transform: translateY(0); }
+
+  h1 { font-size: 56px; font-weight: 600; letter-spacing: -1.5px; line-height: 1.15; margin-bottom: 16px; }
+  h2 { font-size: 44px; font-weight: 600; letter-spacing: -1px; line-height: 1.2; margin-bottom: 40px; }
+  h3 { font-size: 26px; font-weight: 500; margin-bottom: 16px; color: var(--accent); transition: color 0.4s ease; }
+  .subtitle { font-size: 24px; color: var(--text-dim); font-weight: 300; letter-spacing: 0.5px; transition: color 0.4s ease; }
+  .label {
+    font-size: 14px; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 2px; color: var(--text-muted); margin-bottom: 12px;
+    transition: color 0.4s ease;
+  }
+  .green { color: var(--accent); }
+  .dim { color: var(--text-dim); transition: color 0.4s ease; }
+  .divider { width: 48px; height: 2px; background: var(--accent); margin: 24px 0; }
+
+  .big-number {
+    font-family: 'IBM Plex Mono', monospace; font-size: 64px;
+    font-weight: 600; color: var(--accent); line-height: 1;
+  }
+  .stat-label { font-size: 16px; color: var(--text-dim); margin-top: 8px; font-weight: 400; transition: color 0.4s ease; }
+  .stat-item { display: flex; flex-direction: column; }
+
+  ul { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+  ul li {
+    font-size: 20px; line-height: 1.5; padding-left: 20px; position: relative;
+    color: var(--text); font-weight: 400; transition: color 0.4s ease;
+  }
+  ul li::before {
+    content: ''; position: absolute; left: 0; top: 11px;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+  }
+  ul li .dim { color: var(--text-dim); transition: color 0.4s ease; }
+  ul li strong { font-weight: 600; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 18px; transition: all 0.4s ease; }
+  table th {
+    text-align: left; padding: 10px 14px; font-size: 13px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent);
+    border-bottom: 1px solid var(--border-light); white-space: nowrap;
+    transition: border-color 0.4s ease;
+  }
+  table td {
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    color: var(--text-dim); font-weight: 400; line-height: 1.45; vertical-align: top;
+    transition: color 0.4s ease, border-color 0.4s ease;
+  }
+  table tr:last-child td { border-bottom: none; }
+  table td:first-child { color: var(--text); font-weight: 500; }
+
+  .columns { display: grid; gap: 64px; }
+  .columns.two { grid-template-columns: 1fr 1fr; }
+
+  .progress {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 4px; z-index: 200; align-items: flex-end;
+  }
+  .progress .dot-wrapper {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    cursor: pointer; padding: 4px 6px; position: relative;
+  }
+  .progress .dot-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 500;
+    color: var(--text-muted); letter-spacing: 0.5px; white-space: nowrap;
+    transition: all 0.25s ease;
+    max-width: 110px; overflow: hidden; text-overflow: ellipsis;
+    text-align: center;
+  }
+  .progress .dot-wrapper:hover .dot-label { color: var(--text-dim); }
+  .progress .dot-wrapper.active .dot-label { color: var(--accent); font-weight: 600; }
+  .progress .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--dot-inactive); transition: all 0.3s ease;
+  }
+  .progress .dot-wrapper:hover .dot { background: var(--text-muted); }
+  .progress .dot-wrapper.active .dot { background: var(--accent); box-shadow: 0 0 8px rgba(75,147,40,0.4); }
+
+  .slide-counter {
+    position: fixed; bottom: 28px; right: 40px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    color: var(--text-muted); z-index: 100; transition: color 0.4s ease;
+  }
+
+  .slide-scroll { overflow-y: auto; max-height: 100%; padding-right: 8px; }
+  .slide-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+  .slide-scroll::-webkit-scrollbar { display: none; }
+
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+
+  .footnote { font-size: 14px; color: var(--text-muted); margin-top: 32px; transition: color 0.4s ease; }
+
+  .status-card {
+    padding: 16px 20px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    transition: all 0.4s ease;
+  }
+  .status-card.blocker { border-color: #c9873a; background: rgba(201,135,58,0.05); }
+  .status-card.positive { border-color: var(--accent); background: rgba(75,147,40,0.05); }
+  .status-card-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1.2px; margin-bottom: 6px; transition: color 0.4s ease;
+  }
+  .status-card.blocker .status-card-label { color: #c9873a; }
+  .status-card.positive .status-card-label { color: var(--accent); }
+  .status-card p { font-size: 14px; color: var(--text-dim); line-height: 1.4; transition: color 0.4s ease; }
+
+  .phase-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
+    padding: 3px 10px; border-radius: 3px; white-space: nowrap;
+    transition: all 0.4s ease;
+  }
+  .phase-tag.green { color: var(--accent); border: 1px solid rgba(75,147,40,0.3); background: rgba(75,147,40,0.06); }
+  .phase-tag.blue { color: var(--blue-light); border: 1px solid rgba(42,90,138,0.3); background: rgba(42,90,138,0.06); }
+  .phase-tag.orange { color: #c9873a; border: 1px solid rgba(201,135,58,0.3); background: rgba(201,135,58,0.06); }
+
+  .action-card {
+    padding: 20px 24px; border: 1px solid var(--border);
+    border-left: 4px solid var(--border); border-radius: 8px;
+    transition: all 0.4s ease;
+  }
+  .action-card.action { border-left-color: var(--accent); }
+  .action-card.question { border-left-color: #c9873a; }
+  .action-card-title { font-size: 22px; font-weight: 600; color: var(--text); line-height: 1.3; transition: color 0.4s ease; }
+  .action-card p { font-size: 18px; color: var(--text-dim); line-height: 1.4; transition: color 0.4s ease; }
+
+  .owner-badge {
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+    font-weight: 500; color: var(--text-muted); background: var(--surface);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 2px 8px; white-space: nowrap; transition: all 0.4s ease;
+  }
+
+  .section-divider {
+    text-align: center; margin: 28px 0 20px; position: relative;
+  }
+  .section-divider::before {
+    content: ''; position: absolute; top: 50%; left: 0; right: 0;
+    height: 1px; background: var(--border-light); transition: background 0.4s ease;
+  }
+  .section-divider span {
+    position: relative; background: var(--bg); padding: 0 16px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--text-muted);
+    transition: background 0.4s ease, color 0.4s ease;
+  }
+
+  /* ==================== FLOW BLOCKS ==================== */
+  .flow-row { display: flex; align-items: center; gap: 10px; }
+  .flow-block {
+    padding: 18px 14px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 15px; font-weight: 500; color: var(--text);
+    text-align: center; transition: all 0.4s ease; flex: 1;
+  }
+  .flow-block.highlight { border-color: var(--accent); color: var(--accent); background: rgba(75,147,40,0.05); }
+  .flow-block.highlight-blue { border-color: var(--blue); color: var(--blue-light); background: rgba(42,90,138,0.08); }
+  .flow-arrow { color: var(--text-muted); font-size: 20px; flex-shrink: 0; transition: color 0.4s ease; }
+  .flow-row-wrapper { margin-bottom: 32px; }
+  .flow-row-wrapper:last-child { margin-bottom: 0; }
+  .phase-row-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .phase-row-header .step-count {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    color: var(--text-muted); transition: color 0.4s ease;
+  }
+  .flow-block .flow-sub {
+    display: block; font-size: 12px; font-weight: 400;
+    color: var(--text-muted); margin-top: 5px; transition: color 0.4s ease;
+  }
+
+  /* Export dropdown */
+  .export-dropdown { position: absolute; top: calc(100% + 6px); right: 0; z-index: 201; background: var(--bg); border: 1px solid var(--border-light); border-radius: 10px; padding: 6px 0; min-width: 240px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transform: translateY(-8px); transition: all 0.2s ease; }
+  .export-dropdown.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  .export-dropdown-item { padding: 10px 18px; font-size: 13px; color: var(--text-dim); cursor: pointer; transition: all 0.15s ease; }
+  .export-dropdown-item:hover { background: rgba(75,147,40,0.08); color: var(--text); }
+  .export-dropdown-item .item-hint { font-size: 10px; color: var(--text-muted); margin-left: 4px; font-family: 'IBM Plex Mono', monospace; }
+  .export-divider { height: 1px; background: var(--border); margin: 6px 18px; }
+
+  /* Edit / Present mode */
+  body.edit-mode .click-zone { pointer-events: none; }
+  body.edit-mode [contenteditable]:hover { outline: 1px dashed var(--accent); outline-offset: 2px; }
+  body.edit-mode [contenteditable]:focus { outline: 2px solid var(--accent); outline-offset: 2px; background: rgba(75,147,40,0.04); border-radius: 4px; }
+  body.present-mode #modeToggle,
+  body.present-mode .export-wrapper,
+  body.present-mode .progress,
+  body.present-mode .slide-counter,
+  body.present-mode .slide-controls { display: none !important; }
+  body.present-mode .slide-frame { max-width: 100vw; max-height: 100vh; width: 100vw; height: 100vh; border-radius: 0; }
+
+  /* Slide controls */
+  .slide-controls {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    z-index: 300; display: none; align-items: center; gap: 8px;
+  }
+  body.edit-mode .slide-controls { display: flex; }
+  .slide-controls .toolbar-btn { padding: 4px 12px; }
+  .slide-controls .toolbar-btn.danger { border-color: rgba(201,135,58,0.4); }
+  .slide-controls .toolbar-btn.danger:hover { border-color: #c9873a; background: rgba(201,135,58,0.1); }
+  .slide-controls .toolbar-btn.danger .icon,
+  .slide-controls .toolbar-btn.danger .label-text { color: #c9873a; }
+  .slide-controls .slide-info {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted); letter-spacing: 0.5px; padding: 0 6px;
+    text-transform: uppercase;
+  }
+
+  /* Hidden slides */
+  body.edit-mode .slide.slide-hidden.active { outline: 2px dashed rgba(201,135,58,0.4); outline-offset: -2px; }
+  .progress .dot-wrapper.hidden .dot { background: var(--text-muted); opacity: 0.3; }
+  .progress .dot-wrapper.hidden .dot-label { text-decoration: line-through; opacity: 0.4; }
+  .progress .dot-wrapper.hidden.active .dot { background: #c9873a; opacity: 0.6; box-shadow: none; }
+  .progress .dot-wrapper.hidden.active .dot-label { color: #c9873a; opacity: 0.7; text-decoration: line-through; }
+
+  @media print {
+    .toolbar, .export-dropdown, .progress, .slide-counter, .click-zone, .slide-controls { display: none !important; }
+    body { overflow: visible !important; height: auto !important; width: auto !important; display: block !important; background: white !important; color: #111 !important; }
+    .deck-container { width: auto !important; height: auto !important; display: block !important; position: static !important; }
+    .slide-frame { width: 100% !important; height: auto !important; max-width: none !important; max-height: none !important; position: static !important; overflow: visible !important; }
+    .slide .fragment { opacity: 1 !important; transform: none !important; }
+    body.print-all .slide { position: static !important; opacity: 1 !important; pointer-events: auto !important; display: flex !important; page-break-after: always; padding: 48px !important; min-height: 90vh; }
+    body.print-all .slide:last-child { page-break-after: auto; }
+    body.print-current .slide { display: none !important; }
+    body.print-current .slide.active { display: flex !important; position: static !important; opacity: 1 !important; padding: 48px !important; min-height: 90vh; }
+    h1, h2, h3, .action-card-title { color: #111 !important; }
+    p, li, td, .action-card p, .status-card p { color: #444 !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar" id="toolbar">
+  <div class="toolbar-btn" id="modeToggle" onclick="toggleMode()">
+    <span class="icon" id="modeIcon">&#9998;</span>
+    <span class="label-text" id="modeLabel">edit</span>
+  </div>
+  <div class="export-wrapper">
+    <div class="toolbar-btn" id="exportBtn" onclick="toggleExport(event)">
+      <span class="icon">&darr;</span>
+      <span class="label-text" id="exportLabel">export</span>
+    </div>
+    <div class="export-dropdown" id="exportDropdown">
+      <div class="export-dropdown-item" onclick="exportMarkdown('current')">Copy this slide as Markdown <span class="item-hint">clipboard</span></div>
+      <div class="export-dropdown-item" onclick="exportMarkdown('all')">Copy all slides as Markdown <span class="item-hint">clipboard</span></div>
+      <div class="export-divider"></div>
+      <div class="export-dropdown-item" onclick="exportPDF('current')">Print this slide as PDF <span class="item-hint">&#8984;P</span></div>
+      <div class="export-dropdown-item" onclick="exportPDF('all')">Print all slides as PDF <span class="item-hint">&#8984;P</span></div>
+    </div>
+  </div>
+  <div class="toolbar-btn" id="themeToggle" onclick="toggleTheme()">
+    <span class="icon icon-moon">&#9790;</span>
+    <span class="icon icon-sun">&#9788;</span>
+    <span class="label-text" id="themeLabel">dark</span>
+  </div>
+</div>
+<div class="slide-controls" id="slideControls">
+  <span class="slide-info" id="slideInfo">Slide 1</span>
+  <div class="toolbar-btn" id="hideSlideBtn" onclick="toggleHideSlide()">
+    <span class="icon" id="hideIcon">&#128065;</span>
+    <span class="label-text" id="hideLabel">hide</span>
+  </div>
+  <div class="toolbar-btn danger" id="deleteSlideBtn" onclick="deleteCurrentSlide()" style="display:none;">
+    <span class="icon">&#128465;</span>
+    <span class="label-text">delete</span>
+  </div>
+</div>
+<div class="click-zone left" onclick="prev()"></div>
+<div class="click-zone right" onclick="next()"></div>
+
+<div class="deck-container">
+  <div class="slide-frame">
+
+    <!-- ==================== SLIDE 0: Title ==================== -->
+    <div class="slide active" data-slide="0" data-title="Overview">
+      <div>
+        <div class="label fragment">Japan Offsite</div>
+        <h1 class="fragment" style="font-size: 48px; letter-spacing: -2px; margin-bottom: 24px;">
+          Foundational Product<br><span class="green">Roadmap</span>
+        </h1>
+        <div class="divider fragment"></div>
+        <p class="subtitle fragment" style="margin-top: 24px; font-size: 20px; max-width: 700px; line-height: 1.6;">
+          We&rsquo;re on a good path. The foundations are laid, the team is aligned, and the product is taking shape. But there&rsquo;s still a lot to do. Here&rsquo;s where we focus next.
+        </p>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 1: Engineering ==================== -->
+    <div class="slide" data-slide="1" data-title="Engineering">
+      <div class="slide-scroll">
+        <div class="label fragment">Priorities</div>
+        <h2 class="fragment" style="margin-bottom: 14px;">Engineering</h2>
+
+        <div class="fragment" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px;">
+
+            <div class="action-card question" style="padding: 12px 18px;">
+              <span class="phase-tag orange" style="margin-bottom: 4px; display: inline-block;">High Priority</span>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                <div class="action-card-title" style="font-size: 18px;">Finish unification</div>
+                <span class="owner-badge">Tumay</span>
+              </div>
+              <p style="font-size: 14px;">What Tumay mentioned as The New World 🌍 in his presentation. ClickHouse MVs as the logic layer, store outputs in protocol-agnostic primitive tables.</p>
+            </div>
+
+            <div class="action-card question" style="padding: 12px 18px;">
+              <span class="phase-tag orange" style="margin-bottom: 4px; display: inline-block;">High Priority</span>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                <div class="action-card-title" style="font-size: 18px;">Technical Debt</div>
+                <span class="owner-badge">Engineering</span>
+              </div>
+              <p style="font-size: 14px;">We have technical debt on the server side. This is a high priority.</p>
+            </div>
+
+            <div class="action-card question" style="padding: 12px 18px;">
+              <span class="phase-tag orange" style="margin-bottom: 4px; display: inline-block;">High Priority</span>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                <div class="action-card-title" style="font-size: 18px;">Finish Lending Phase 1 (2 of 4 lending endpoints: pools &amp; protocols)</div>
+                <span class="owner-badge">Justin</span>
+              </div>
+              <p style="font-size: 14px;">Release beta in the next couple of weeks.</p>
+            </div>
+
+            <div class="action-card action" style="padding: 12px 18px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                <div class="action-card-title" style="font-size: 18px;">Deploy QC agent on beta endpoints</div>
+                <span class="owner-badge">Ricky</span>
+              </div>
+              <p style="font-size: 14px;">Release QC agent on beta endpoints, test lending endpoints on beta before releasing production versions.</p>
+            </div>
+
+            <div class="action-card action" style="padding: 12px 18px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                <div class="action-card-title" style="font-size: 18px;">Base Firehose node</div>
+                <span class="owner-badge">Tatu</span>
+              </div>
+              <p style="font-size: 14px;">Finish syncing the node. Move away from Pinax dependency.</p>
+            </div>
+
+            <div class="action-card action" style="padding: 12px 18px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                <div class="action-card-title" style="font-size: 18px;">Connect beta endpoints with staging docs</div>
+                <span class="owner-badge">Carlos Team</span>
+              </div>
+            </div>
+
+            <div class="action-card action" style="padding: 12px 18px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                <div class="action-card-title" style="font-size: 18px;">Cloud cost tracking</div>
+                <span class="owner-badge">Tatu</span>
+              </div>
+              <p style="font-size: 14px;">Already started. Needed from Sam to have granular costs tracking.</p>
+            </div>
+
+            <div class="action-card action" style="padding: 12px 18px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                <div class="action-card-title" style="font-size: 18px;">Deep42 X revamp</div>
+                <span class="owner-badge">Ricky</span>
+              </div>
+              <p style="font-size: 14px;">Phase 1 is already in progress. Phase 2 to start when lending endpoints are ready.</p>
+            </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 2: Product ==================== -->
+    <div class="slide" data-slide="2" data-title="Product">
+      <div>
+        <div class="label fragment">Priorities</div>
+        <h2 class="fragment" style="margin-bottom: 14px;">Product</h2>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; max-width: 900px;">
+
+          <div class="action-card question fragment" style="padding: 12px 18px;">
+            <span class="phase-tag orange" style="margin-bottom: 4px; display: inline-block;">High Priority</span>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <div class="action-card-title" style="font-size: 18px;">Pricing</div>
+              <div style="display: flex; gap: 6px;">
+                <span class="owner-badge">Doug lead</span>
+              </div>
+            </div>
+            <p style="font-size: 14px;">Calculate unit costs (Tumay, Tatu). Finish pricing model (Doug).</p>
+          </div>
+
+          <div class="action-card question fragment" style="padding: 12px 18px;">
+            <span class="phase-tag orange" style="margin-bottom: 4px; display: inline-block;">High Priority</span>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <div class="action-card-title" style="font-size: 18px;">Iteration loop with ZyFAI, Sail and Giza</div>
+              <span class="owner-badge">Doug</span>
+            </div>
+            <p style="font-size: 14px;">First four endpoints will be shared with ZyFAI, Sail, Giza for feedback. We will iterate based on their feedback before going live.</p>
+          </div>
+
+          <div class="action-card question fragment" style="padding: 12px 18px;">
+            <span class="phase-tag orange" style="margin-bottom: 4px; display: inline-block;">High Priority</span>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <div class="action-card-title" style="font-size: 18px;">Finish website development</div>
+              <span class="owner-badge">Brian</span>
+            </div>
+          </div>
+
+          <div class="action-card action fragment" style="padding: 12px 18px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <div class="action-card-title" style="font-size: 18px;">Finish specs feedback loop and iteration for lending phase 2</div>
+              <div style="display: flex; gap: 6px;">
+                <span class="owner-badge">Doug</span>
+                <span class="owner-badge">Justin</span>
+              </div>
+            </div>
+            <p style="font-size: 14px;">Vaults and curators specs (Doug), then start development (Justin).</p>
+          </div>
+
+          <div class="action-card action fragment" style="padding: 12px 18px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <div class="action-card-title" style="font-size: 18px;">Billing implementation</div>
+            </div>
+            <p style="font-size: 14px;">Integrate billing to the app, make any changes needed in the UI for users.</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 3: Business & Marketing ==================== -->
+    <div class="slide" data-slide="3" data-title="Business & MKT">
+      <div>
+        <div class="label fragment">Priorities</div>
+        <h2 class="fragment" style="margin-bottom: 14px;">Business &amp; Marketing</h2>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; max-width: 900px;">
+
+          <div class="action-card action fragment" style="padding: 12px 18px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <div class="action-card-title" style="font-size: 18px;">Finish fundraise</div>
+            </div>
+          </div>
+
+          <div class="action-card action fragment" style="padding: 12px 18px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <div class="action-card-title" style="font-size: 18px;">Fundraise announcement</div>
+            </div>
+          </div>
+
+          <div class="action-card action fragment" style="padding: 12px 18px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <div class="action-card-title" style="font-size: 18px;">Foundational product launch campaign</div>
+            </div>
+          </div>
+
+          <div class="action-card action fragment" style="padding: 12px 18px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <div class="action-card-title" style="font-size: 18px;">Continue with Brand pivot</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /slide-frame -->
+
+  <div class="progress" id="progress"></div>
+  <div class="slide-counter" id="counter"></div>
+
+</div><!-- /deck-container -->
+
+<script>
+(function() {
+  let slides = Array.from(document.querySelectorAll('.slide'));
+  let totalSlides = slides.length;
+  let current = 0;
+  let fragmentQueue = [];
+  let fragmentIndex = 0;
+  const hiddenSlides = new Set();
+  const storageKey = 'deck-hidden-' + document.title.replace(/[^a-zA-Z0-9]/g, '-');
+
+  function saveHidden() { localStorage.setItem(storageKey, JSON.stringify([...hiddenSlides])); }
+  function loadHidden() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      saved.forEach(i => { if (i >= 0 && i < totalSlides) { hiddenSlides.add(i); slides[i].classList.add('slide-hidden'); } });
+    } catch(e) {}
+  }
+  loadHidden();
+
+  // Text edit persistence
+  const editsKey = 'deck-edits-' + document.title.replace(/[^a-zA-Z0-9]/g, '-');
+
+  function saveEdits() {
+    const data = {};
+    slides.forEach((s, i) => {
+      const slideEdits = {};
+      s.querySelectorAll('[data-edit-id]').forEach(el => {
+        slideEdits[el.getAttribute('data-edit-id')] = el.innerHTML;
+      });
+      if (Object.keys(slideEdits).length) data[i] = slideEdits;
+    });
+    localStorage.setItem(editsKey, JSON.stringify(data));
+  }
+
+  function loadEdits() {
+    try {
+      const data = JSON.parse(localStorage.getItem(editsKey) || '{}');
+      Object.keys(data).forEach(slideIdx => {
+        const i = parseInt(slideIdx);
+        if (i >= 0 && i < totalSlides) {
+          Object.keys(data[slideIdx]).forEach(editId => {
+            const el = slides[i].querySelector('[data-edit-id="' + editId + '"]');
+            if (el) el.innerHTML = data[slideIdx][editId];
+          });
+        }
+      });
+    } catch(e) {}
+  }
+
+  // Tag all editable elements with stable IDs
+  (function tagEditables() {
+    const editableSelectors = 'h1, h2, h3, p, li, td, th, .subtitle, .label, .stat-label, .big-number, .footnote, .action-card-title, .status-card-label, .phase-tag, code';
+    slides.forEach((s, si) => {
+      let counter = 0;
+      s.querySelectorAll(editableSelectors).forEach(el => {
+        el.setAttribute('data-edit-id', 's' + si + '-e' + counter);
+        counter++;
+      });
+    });
+  })();
+  loadEdits();
+
+  document.addEventListener('blur', function(e) {
+    if (e.target && e.target.getAttribute && e.target.getAttribute('data-edit-id')) {
+      saveEdits();
+    }
+  }, true);
+
+  const progressEl = document.getElementById('progress');
+
+  function buildProgressDots() {
+    progressEl.innerHTML = '';
+    for (let i = 0; i < totalSlides; i++) {
+      const slideEl = slides[i];
+      let title = slideEl.getAttribute('data-title') || '';
+      if (!title) {
+        const h2 = slideEl.querySelector('h2');
+        const h1 = slideEl.querySelector('h1');
+        const lbl = slideEl.querySelector('.label');
+        if (h2) title = h2.textContent.trim().split('\n')[0];
+        else if (h1) title = h1.textContent.trim().split('\n')[0];
+        else if (lbl) title = lbl.textContent.trim();
+        if (title.length > 16) title = title.substring(0, 14) + '\u2026';
+      }
+      const wrapper = document.createElement('div');
+      wrapper.className = 'dot-wrapper' + (i === current ? ' active' : '') + (hiddenSlides.has(i) ? ' hidden' : '');
+      const labelEl = document.createElement('div');
+      labelEl.className = 'dot-label';
+      labelEl.textContent = title;
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      wrapper.appendChild(labelEl);
+      wrapper.appendChild(dot);
+      wrapper.addEventListener('click', ((idx) => (e) => { e.stopPropagation(); goToSlide(idx); })(i));
+      progressEl.appendChild(wrapper);
+    }
+  }
+  buildProgressDots();
+
+  function updateCounter() {
+    if (hiddenSlides.has(current)) {
+      document.getElementById('counter').textContent = (current + 1) + ' / ' + totalSlides + ' [hidden]';
+    } else {
+      let visibleIdx = 0;
+      for (let i = 0; i <= current; i++) { if (!hiddenSlides.has(i)) visibleIdx++; }
+      document.getElementById('counter').textContent = visibleIdx + ' / ' + (totalSlides - hiddenSlides.size);
+    }
+  }
+  function buildFragmentQueue(slideEl) { fragmentQueue = Array.from(slideEl.querySelectorAll('.fragment')); fragmentIndex = 0; fragmentQueue.forEach(f => f.classList.remove('visible')); }
+  function showAllFragments(slideEl) { const frags = slideEl.querySelectorAll('.fragment'); frags.forEach(f => f.classList.add('visible')); fragmentQueue = Array.from(frags); fragmentIndex = fragmentQueue.length; }
+  function revealNextFragment() { if (fragmentIndex < fragmentQueue.length) { fragmentQueue[fragmentIndex].classList.add('visible'); fragmentIndex++; return true; } return false; }
+  function hideLastFragment() { if (fragmentIndex > 0) { fragmentIndex--; fragmentQueue[fragmentIndex].classList.remove('visible'); return true; } return false; }
+
+  function findVisibleSlide(from, dir) {
+    let idx = from + dir;
+    while (idx >= 0 && idx < totalSlides) {
+      if (!hiddenSlides.has(idx)) return idx;
+      idx += dir;
+    }
+    return -1;
+  }
+
+  // Auto-scale
+  function autoScaleSlide(slideEl) {
+    const inner = slideEl.children[0];
+    if (!inner) return;
+    inner.style.zoom = '1';
+    const style = getComputedStyle(slideEl);
+    const availH = slideEl.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+    const naturalH = inner.scrollHeight;
+    if (naturalH <= 0 || availH <= 0) return;
+    let scale = availH / naturalH;
+    if (scale > 1) scale = 1 + (scale - 1) * 0.5;
+    scale = Math.min(1.25, Math.max(0.55, scale));
+    if (scale > 0.97 && scale < 1.03) { inner.style.zoom = ''; return; }
+    inner.style.zoom = scale;
+  }
+
+  function goToSlide(index) {
+    if (index < 0 || index >= totalSlides || index === current) return;
+    slides[current].querySelectorAll('.fragment').forEach(f => f.classList.remove('visible'));
+    slides[current].classList.remove('active');
+    progressEl.children[current].classList.remove('active');
+    current = index;
+    slides[current].classList.add('active');
+    progressEl.children[current].classList.add('active');
+    updateCounter();
+    buildFragmentQueue(slides[current]);
+    updateSlideControls();
+    autoScaleSlide(slides[current]);
+  }
+
+  function next() {
+    if (fragmentIndex < fragmentQueue.length) { showAllFragments(slides[current]); return; }
+    const nextIdx = (currentMode === 'edit') ? current + 1 : findVisibleSlide(current, 1);
+    if (nextIdx >= 0 && nextIdx < totalSlides) goToSlide(nextIdx);
+  }
+
+  function prev() {
+    const prevIdx = (currentMode === 'edit') ? current - 1 : findVisibleSlide(current, -1);
+    if (prevIdx >= 0) {
+      slides[current].classList.remove('active');
+      progressEl.children[current].classList.remove('active');
+      current = prevIdx;
+      slides[current].classList.add('active');
+      progressEl.children[current].classList.add('active');
+      updateCounter();
+      showAllFragments(slides[current]);
+      updateSlideControls();
+      autoScaleSlide(slides[current]);
+    }
+  }
+
+  window.next = next;
+  window.prev = prev;
+
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+  document.addEventListener('touchend', (e) => { const d = touchStartX - e.changedTouches[0].screenX; if (Math.abs(d) > 50) { d > 0 ? next() : prev(); } });
+
+  // Theme
+  window.toggleTheme = function() {
+    const html = document.documentElement;
+    const cur = html.getAttribute('data-theme');
+    const nxt = cur === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', nxt);
+    document.getElementById('themeLabel').textContent = nxt;
+    localStorage.setItem('cambrian-deck-theme', nxt);
+  };
+  const savedTheme = localStorage.getItem('cambrian-deck-theme');
+  if (savedTheme) { document.documentElement.setAttribute('data-theme', savedTheme); document.getElementById('themeLabel').textContent = savedTheme; }
+
+  updateCounter();
+  buildFragmentQueue(slides[0]);
+  autoScaleSlide(slides[0]);
+  setTimeout(() => { revealNextFragment(); let i = 1; const iv = setInterval(() => { if (!revealNextFragment()) clearInterval(iv); i++; }, 120); }, 300);
+
+  window.addEventListener('resize', () => { autoScaleSlide(slides[current]); });
+
+  // Export
+  const exportBtn = document.getElementById('exportBtn');
+  const exportDropdown = document.getElementById('exportDropdown');
+  const exportLabel = document.getElementById('exportLabel');
+  window.toggleExport = function(e) { e.stopPropagation(); exportDropdown.classList.toggle('open'); };
+  document.addEventListener('click', (e) => {
+    if (!exportBtn.contains(e.target) && !exportDropdown.contains(e.target)) exportDropdown.classList.remove('open');
+  });
+
+  function slideToMarkdown(slideEl) {
+    const lines = [];
+    const label = slideEl.querySelector('.label');
+    const h1 = slideEl.querySelector('h1');
+    const h2 = slideEl.querySelector('h2');
+    if (label) lines.push('*' + label.textContent.trim() + '*');
+    if (h1) lines.push('# ' + h1.textContent.trim().replace(/\s+/g, ' '));
+    else if (h2) lines.push('## ' + h2.textContent.trim().replace(/\s+/g, ' '));
+    slideEl.querySelectorAll(':scope > div > p, :scope > div > div > p.subtitle').forEach(p => {
+      if (p.closest('.diff-card, .action-card, .status-card')) return;
+      const text = p.textContent.trim();
+      if (text) lines.push('', text);
+    });
+    slideEl.querySelectorAll('table').forEach(table => {
+      lines.push('');
+      const headers = [];
+      table.querySelectorAll('th').forEach(th => headers.push(th.textContent.trim()));
+      if (headers.length) { lines.push('| ' + headers.join(' | ') + ' |'); lines.push('| ' + headers.map(() => '---').join(' | ') + ' |'); }
+      table.querySelectorAll('tbody tr').forEach(tr => {
+        const cells = [];
+        tr.querySelectorAll('td').forEach(td => cells.push(td.textContent.trim().replace(/\s+/g, ' ')));
+        if (cells.length) lines.push('| ' + cells.join(' | ') + ' |');
+      });
+    });
+    slideEl.querySelectorAll('ul').forEach(ul => {
+      if (ul.closest('.action-card, .diff-card, .status-card')) return;
+      lines.push('');
+      ul.querySelectorAll(':scope > li').forEach(li => lines.push('- ' + li.textContent.trim().replace(/\s+/g, ' ')));
+    });
+    slideEl.querySelectorAll('.status-card').forEach(card => {
+      const lbl = card.querySelector('.status-card-label')?.textContent.trim() || '';
+      const body = card.querySelector('p')?.textContent.trim() || '';
+      lines.push('', (card.classList.contains('blocker') ? '! ' : '+ ') + '**' + lbl + ':** ' + body);
+    });
+    slideEl.querySelectorAll('.action-card').forEach(card => {
+      const title = card.querySelector('.action-card-title')?.textContent.trim() || '';
+      const body = card.querySelector('p')?.textContent.trim() || '';
+      lines.push('', (card.classList.contains('question') ? '? ' : '> ') + '**' + title + '**');
+      if (body) lines.push('  ' + body);
+    });
+    return lines.join('\n').trim();
+  }
+
+  window.exportMarkdown = function(scope) {
+    exportDropdown.classList.remove('open');
+    let md = '';
+    if (scope === 'current') { md = slideToMarkdown(slides[current]); }
+    else { const parts = []; slides.forEach((s, i) => { if (!hiddenSlides.has(i)) parts.push(slideToMarkdown(s)); }); md = parts.join('\n\n---\n\n'); }
+    navigator.clipboard.writeText(md).then(() => { exportBtn.classList.add('copied'); exportLabel.textContent = 'copied!'; setTimeout(() => { exportBtn.classList.remove('copied'); exportLabel.textContent = 'export'; }, 1500); });
+  };
+  window.exportPDF = function(scope) {
+    exportDropdown.classList.remove('open');
+    const cls = scope === 'current' ? 'print-current' : 'print-all';
+    document.body.classList.add(cls);
+    if (scope === 'all') { slides.forEach((s, i) => { if (!hiddenSlides.has(i)) s.querySelectorAll('.fragment').forEach(f => f.classList.add('visible')); }); }
+    else { slides[current].querySelectorAll('.fragment').forEach(f => f.classList.add('visible')); }
+    window.print();
+    window.addEventListener('afterprint', () => { document.body.classList.remove(cls); buildFragmentQueue(slides[current]); showAllFragments(slides[current]); }, { once: true });
+  };
+
+  // Edit / Present mode
+  let currentMode = 'view';
+  const editableSelectors = 'h1, h2, h3, p, li, td, th, .subtitle, .label, .stat-label, .big-number, .footnote, .action-card-title, .status-card-label, .phase-tag, code';
+
+  function setEditables(editable) {
+    slides.forEach(s => {
+      s.querySelectorAll(editableSelectors).forEach(el => {
+        if (editable) { el.setAttribute('contenteditable', 'true'); el.setAttribute('spellcheck', 'false'); }
+        else { el.removeAttribute('contenteditable'); el.removeAttribute('spellcheck'); }
+      });
+    });
+  }
+
+  function enterEditMode() {
+    currentMode = 'edit';
+    document.body.classList.add('edit-mode');
+    document.body.classList.remove('present-mode');
+    if (document.fullscreenElement) document.exitFullscreen();
+    setEditables(true);
+    showAllFragments(slides[current]);
+    document.getElementById('modeIcon').innerHTML = '&#9654;';
+    document.getElementById('modeLabel').textContent = 'present';
+    updateSlideControls();
+  }
+
+  function enterPresentMode() {
+    currentMode = 'present';
+    document.body.classList.remove('edit-mode');
+    document.body.classList.add('present-mode');
+    setEditables(false);
+    if (hiddenSlides.has(current)) {
+      const vis = findVisibleSlide(current, 1);
+      if (vis >= 0) goToSlide(vis);
+      else { const vis2 = findVisibleSlide(current, -1); if (vis2 >= 0) goToSlide(vis2); }
+    }
+    document.documentElement.requestFullscreen().catch(() => {});
+    document.getElementById('modeIcon').innerHTML = '&#9998;';
+    document.getElementById('modeLabel').textContent = 'edit';
+    setTimeout(() => autoScaleSlide(slides[current]), 100);
+  }
+
+  window.toggleMode = function() {
+    if (currentMode === 'view') enterEditMode();
+    else if (currentMode === 'edit') enterPresentMode();
+    else enterEditMode();
+  };
+
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && currentMode === 'present') {
+      currentMode = 'view';
+      document.body.classList.remove('present-mode');
+      document.getElementById('modeIcon').innerHTML = '&#9998;';
+      document.getElementById('modeLabel').textContent = 'edit';
+    }
+    setTimeout(() => autoScaleSlide(slides[current]), 100);
+  });
+
+  // Slide controls (hide / delete)
+  function updateSlideControls() {
+    const info = document.getElementById('slideInfo');
+    const hideIcon = document.getElementById('hideIcon');
+    const hideLabel = document.getElementById('hideLabel');
+    const deleteBtn = document.getElementById('deleteSlideBtn');
+    const isHidden = hiddenSlides.has(current);
+
+    info.textContent = 'Slide ' + (current + 1) + ' / ' + totalSlides;
+    if (isHidden) {
+      hideIcon.textContent = '\u25C9';
+      hideLabel.textContent = 'show';
+      deleteBtn.style.display = 'flex';
+    } else {
+      hideIcon.textContent = '\u25CE';
+      hideLabel.textContent = 'hide';
+      deleteBtn.style.display = 'none';
+    }
+  }
+  updateSlideControls();
+
+  window.toggleHideSlide = function() {
+    if (hiddenSlides.has(current)) {
+      hiddenSlides.delete(current);
+      slides[current].classList.remove('slide-hidden');
+      progressEl.children[current].classList.remove('hidden');
+    } else {
+      hiddenSlides.add(current);
+      slides[current].classList.add('slide-hidden');
+      progressEl.children[current].classList.add('hidden');
+    }
+    saveHidden();
+    updateSlideControls();
+    updateCounter();
+  };
+
+  window.deleteCurrentSlide = function() {
+    if (!confirm('Permanently delete slide ' + (current + 1) + '?\nThis cannot be undone.')) return;
+
+    const idx = current;
+    slides[idx].remove();
+
+    hiddenSlides.delete(idx);
+    const shifted = new Set();
+    hiddenSlides.forEach(h => { shifted.add(h > idx ? h - 1 : h); });
+    hiddenSlides.clear();
+    shifted.forEach(h => hiddenSlides.add(h));
+
+    slides = Array.from(document.querySelectorAll('.slide'));
+    totalSlides = slides.length;
+    if (totalSlides === 0) return;
+    if (current >= totalSlides) current = totalSlides - 1;
+
+    slides[current].classList.add('active');
+    saveHidden();
+    saveEdits();
+    buildProgressDots();
+    updateCounter();
+    buildFragmentQueue(slides[current]);
+    showAllFragments(slides[current]);
+    updateSlideControls();
+  };
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (currentMode === 'edit' && document.activeElement && document.activeElement.getAttribute('contenteditable') === 'true') return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); next(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prev(); }
+    else if (e.key === 'Home') { e.preventDefault(); goToSlide(0); }
+    else if (e.key === 'End') { e.preventDefault(); goToSlide(totalSlides - 1); }
+    else if (e.key === 'e' && !e.ctrlKey && !e.metaKey) { toggleMode(); }
+  });
+})();
+</script>
+
+</body>
+</html>

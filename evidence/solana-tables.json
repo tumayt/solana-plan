@@ -1,0 +1,57 @@
+{
+	"meta":
+	[
+		{
+			"name": "table",
+			"type": "String"
+		},
+		{
+			"name": "rows",
+			"type": "UInt64"
+		},
+		{
+			"name": "bytes",
+			"type": "UInt64"
+		}
+	],
+
+	"data":
+	[
+		["transaction_token_balance", 22080052232, 1322125022233],
+		["pool_transactions_cache", 6259238284, 533731139160],
+		["trades", 6195525632, 518016375351],
+		["meteora_event_Swap", 686519713, 66483002551],
+		["meteora_damm_v2_event_EvtSwap", 364034755, 37471636437],
+		["meteora_instruction_swap", 250413095, 32042746166],
+		["meteora_event_ClaimFee", 69614388, 10438295124],
+		["meteora_event_RemoveLiquidity", 56997121, 9052456068],
+		["meteora_event_AddLiquidity", 49437773, 7484910847],
+		["meteora_event_CompositionFee", 29342505, 3670200631],
+		["meteora_instruction_add_liquidity_by_strategy", 8806163, 2394125679],
+		["meteora_instruction_remove_liquidity_by_range", 6431164, 1771149363],
+		["meteora_instruction_add_liquidity_by_weight", 281388, 67592316],
+		["meteora_damm_v2_event_EvtAddLiquidity", 150128, 31356094],
+		["meteora_instruction_add_liquidity_one_side", 111496, 30853013],
+		["meteora_event_LbPairCreate", 164647, 29455721],
+		["meteora_instruction_remove_liquidity", 70669, 14939747],
+		["meteora_instruction_withdraw_protocol_fee", 34293, 7653097],
+		["meteora_instruction_remove_all_liquidity", 36706, 5620501],
+		["meteora_instruction_add_liquidity_by_strategy_one_side", 26995, 4658300],
+		["meteora_instruction_claim_reward", 13823, 1847669],
+		["meteora_instruction_add_liquidity_one_side_precise", 1075, 678381],
+		["meteora_instruction_initialize_lb_pair", 1694, 608600],
+		["meteora_instruction_add_liquidity", 497, 151783],
+		["meteora_instruction_fund_reward", 11, 5143]
+	],
+
+	"rows": 25,
+
+	"rows_before_limit_at_least": 25,
+
+	"statistics":
+	{
+		"elapsed": 0.011286738,
+		"rows_read": 307,
+		"bytes_read": 18919
+	}
+}

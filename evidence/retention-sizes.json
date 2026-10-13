@@ -1,0 +1,36 @@
+{
+	"meta":
+	[
+		{
+			"name": "retention",
+			"type": "String"
+		},
+		{
+			"name": "tables",
+			"type": "UInt64"
+		},
+		{
+			"name": "bytes",
+			"type": "Nullable(UInt64)"
+		}
+	],
+
+	"data":
+	[
+		["1 month", 16, 2525787262714],
+		["no TTL", 211, 1212555520272],
+		["1 year", 3, 1141708081727],
+		["other TTL", 1, 83585029872]
+	],
+
+	"rows": 4,
+
+	"rows_before_limit_at_least": 4,
+
+	"statistics":
+	{
+		"elapsed": 0.066948181,
+		"rows_read": 231,
+		"bytes_read": 156490
+	}
+}

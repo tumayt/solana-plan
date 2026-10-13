@@ -1,0 +1,104 @@
+<!doctype html><html><head><meta charset="utf-8"/>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&family=Figtree:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --green:#4b9328; --green-deep:#3b7120; --green-pale:#ecefd8;
+    --forest:#1d3212; --sand:#ecdfc3; --card:#f2ede3; --card-border:#d7d2c8;
+    --ink:#204013; --muted:#464032; --sand2:#dfcea7; --neutral6:#a2926e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#888}
+  .canvas{width:2400px;height:1350px;position:relative;font-family:Figtree,sans-serif;background:var(--sand);overflow:hidden;margin-bottom:40px}
+  .inner{position:absolute;inset:0;padding:112px 140px 120px}
+  .head{font-family:"Crimson Text",serif;font-weight:600;letter-spacing:-0.4px;line-height:1.16}
+  .hl{background:var(--green-deep);color:var(--green-pale);padding:6px 28px 14px}
+  .mono{font-family:'JetBrains Mono',monospace}
+  .footer{position:absolute;left:140px;right:140px;bottom:64px;display:flex;justify-content:space-between;align-items:center}
+  .credit{font-size:26px;color:var(--muted)}
+  .brandmark{display:flex;align-items:center;gap:16px;font-family:"Crimson Text",serif;font-weight:600;font-size:34px;color:var(--ink)}
+  .brandmark img{height:52px;display:block}
+</style></head><body>
+
+<!-- ============ G1: Ethereum lending indexed by Cambrian ============ -->
+<div class="canvas" id="g1">
+  <div class="inner">
+    <div class="head" style="font-size:76px;color:var(--ink)">Ethereum lending on the Cambrian API</div>
+    <div class="head hl" style="font-size:76px;display:inline-block;margin-top:16px">$20.8B TVL across 2,000+ markets</div>
+
+    <!-- bars scaled 1560px = $17.7B (Aave) -->
+    <div style="margin-top:152px">
+      <div style="display:flex;align-items:center;gap:44px;margin-bottom:48px">
+        <div style="width:380px;text-align:right;font-size:38px;font-weight:700;color:var(--ink)">Aave V3</div>
+        <div style="height:112px;width:1560px;background:var(--green);display:flex;align-items:center;justify-content:flex-end;padding-right:36px">
+          <span style="font-size:29px;color:var(--green-pale);opacity:.85;margin-right:26px">67 markets</span><span style="font-size:46px;font-weight:700;color:var(--green-pale)">$17.81B</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:44px;margin-bottom:48px">
+        <div style="width:380px;text-align:right;font-size:38px;font-weight:700;color:var(--ink)">Morpho vaults</div>
+        <div style="height:112px;width:231px;background:var(--forest)"></div>
+        <div style="font-size:46px;font-weight:700;color:var(--ink);margin-left:-8px">$2.64B</div>
+        <div style="font-size:29px;color:var(--muted)">1,065 vaults</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:44px">
+        <div style="width:380px;text-align:right;font-size:38px;font-weight:700;color:var(--ink)">Euler</div>
+        <div style="height:112px;width:29px;background:var(--neutral6)"></div>
+        <div style="font-size:46px;font-weight:700;color:var(--ink);margin-left:-8px">$0.33B</div>
+        <div style="font-size:29px;color:var(--muted)">869 vaults</div>
+      </div>
+      <div style="margin:88px 0 0 424px;font-size:29px;color:var(--muted)">
+        Every row includes utilization, net-of-fee rates, and curator allocations. Counts are all indexed rows, including those holding no supply.
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="credit">Data: Cambrian API, /beta/evm/lending/overview?chain_id=1, Aug 17, 2026</div>
+    <div class="brandmark"><img src="cambrian_logo.png"/>Cambrian</div>
+  </div>
+</div>
+
+<!-- ============ G2: the API result, USDC/WETH pool ============ -->
+<div class="canvas" id="g2">
+  <div class="inner">
+    <div class="head" style="font-size:76px;color:var(--ink)">What one call returns</div>
+    <div class="mono" style="font-size:29px;color:var(--muted);margin-top:24px">GET /evm/uniswap/v3/pool?chain_id=1&amp;pool_address=0x88e6...5640</div>
+
+    <div style="margin-top:96px;width:2120px;background:var(--card);border:2px solid var(--card-border);border-radius:48px 0 48px 0;padding:78px 96px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <div class="head" style="font-size:56px;color:var(--ink)">Uniswap V3 &middot; USDC/WETH 0.05%</div>
+        <div style="font-size:27px;font-weight:500;color:var(--muted);background:var(--sand2);border-radius:12px;padding:10px 26px">Ethereum mainnet</div>
+      </div>
+
+      <div style="display:flex;margin-top:74px">
+        <div style="flex:1">
+          <div style="font-size:29px;color:var(--muted);margin-bottom:10px">TVL</div>
+          <div class="head" style="font-size:96px;color:var(--ink)">$98.97M</div>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:29px;color:var(--muted);margin-bottom:10px">24h swap volume</div>
+          <div class="head" style="font-size:96px;color:var(--ink)">$76.2M</div>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:29px;color:var(--muted);margin-bottom:10px">Fee APR, 30d</div>
+          <div class="head" style="font-size:96px;color:var(--green-deep)">13.8%</div>
+        </div>
+        <div style="flex:0 0 330px;text-align:right">
+          <div style="font-size:29px;color:var(--muted);margin-bottom:10px">Fee APR, 24h</div>
+          <div class="head" style="font-size:96px;color:var(--ink)">14.1%</div>
+        </div>
+      </div>
+
+      <div style="display:flex;margin-top:70px;padding-top:52px;border-top:2px solid var(--card-border)">
+        <div style="flex:1;font-size:31px;color:var(--muted)">30d volatility&nbsp;&nbsp;<b style="color:var(--ink)">8.0%</b></div>
+        <div style="flex:1;font-size:31px;color:var(--muted)">30d volume&nbsp;&nbsp;<b style="color:var(--ink)">$2.28B</b></div>
+        <div style="flex:1;font-size:31px;color:var(--muted)">Volume, fee APR and volatility each come in six windows, 5m to 1y</div>
+        <div style="flex:0 0 330px"></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="credit">Data: Cambrian API, /evm/uniswap/v3/pool, Aug 17, 2026, 18:40 UTC</div>
+    <div class="brandmark"><img src="cambrian_logo.png"/>Cambrian</div>
+  </div>
+</div>
+
+</body></html>

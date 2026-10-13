@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cambrian API: Euler Protocol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+[data-theme="dark"] {
+  --bg: #0a0a0a;
+  --text: #e5e5e5;
+  --text-dim: #999;
+  --text-muted: #666;
+  --accent: #4b9328;
+  --accent-light: #78AD59;
+  --border: #1a1a1a;
+  --border-light: #252525;
+  --surface: #111;
+  --toggle-bg: #1a1a1a;
+  --dot-inactive: #252525;
+  --code-bg: #111;
+  --code-text: #78AD59;
+  --table-stripe: rgba(255,255,255,0.02);
+  --risk-bg: rgba(17,17,17,0.9);
+  --blue: #2a5a8a;
+  --blue-light: #3a7ab8;
+  --slide-bg-image: url('cambrian_slides_background_dark.svg');
+  --slide-bg-size: cover;
+  --slide-bg-repeat: no-repeat;
+  --slide-content-overlay: rgba(10, 10, 10, 0.85);
+  --card-border: #333;
+}
+[data-theme="light"] {
+  --bg: #fafaf8;
+  --text: #11181c;
+  --text-dim: #57606a;
+  --text-muted: #8b949e;
+  --accent: #4b9328;
+  --accent-light: #3b7120;
+  --border: #e8e8e4;
+  --border-light: #d8d8d4;
+  --surface: #f0efe8;
+  --toggle-bg: #e8e8e4;
+  --dot-inactive: #d0d0c8;
+  --code-bg: #f0efe8;
+  --code-text: #3b7120;
+  --table-stripe: rgba(0,0,0,0.02);
+  --risk-bg: rgba(245,245,240,0.95);
+  --blue: #2a5a8a;
+  --blue-light: #1e4a72;
+  --slide-bg-image: url('cambrian_bg_light.jpg');
+  --slide-bg-size: cover;
+  --slide-bg-repeat: no-repeat;
+  --slide-content-overlay: rgba(247, 246, 240, 0.65);
+  --card-border: var(--border);
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'Figtree', -apple-system, sans-serif;
+  overflow: hidden; height: 100vh; width: 100vw;
+  display: flex; align-items: center; justify-content: center;
+  cursor: default; -webkit-font-smoothing: antialiased;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* ── Toolbar ── */
+.toolbar {
+  position: fixed; top: 20px; right: 24px; z-index: 200;
+  display: flex; align-items: center; gap: 10px;
+}
+.toolbar-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--toggle-bg); border: 1px solid var(--border-light);
+  border-radius: 24px; padding: 6px 14px; cursor: pointer;
+  transition: all 0.3s ease; user-select: none;
+}
+.toolbar-btn:hover { border-color: var(--accent); }
+.toolbar-btn .icon { font-size: 16px; }
+[data-theme="dark"] .toolbar-btn .icon-sun { display: none; }
+[data-theme="dark"] .toolbar-btn .icon-moon { display: inline; }
+[data-theme="light"] .toolbar-btn .icon-sun { display: inline; }
+[data-theme="light"] .toolbar-btn .icon-moon { display: none; }
+.toolbar-btn .label-text {
+  font-size: 11px; font-weight: 500; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--text-muted);
+  font-family: 'IBM Plex Mono', monospace;
+}
+.toolbar-btn .icon { font-size: 16px; color: var(--text-muted); }
+.toolbar-btn:hover .icon { color: var(--accent); }
+.toolbar-btn .export-icon {
+  font-size: 13px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; font-weight: 600;
+}
+.toolbar-btn:hover .export-icon { color: var(--accent); }
+.toolbar-btn.copied { border-color: var(--accent); }
+.toolbar-btn.copied .label-text { color: var(--accent); }
+.export-wrapper { position: relative; }
+
+/* Export dropdown */
+.export-dropdown { position: absolute; top: calc(100% + 6px); right: 0; z-index: 201; background: var(--bg); border: 1px solid var(--border-light); border-radius: 10px; padding: 6px 0; min-width: 240px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transform: translateY(-8px); transition: all 0.2s ease; }
+.export-dropdown.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+.export-dropdown-item { padding: 10px 18px; font-size: 13px; color: var(--text-dim); cursor: pointer; transition: all 0.15s ease; }
+.export-dropdown-item:hover { background: rgba(75,147,40,0.08); color: var(--text); }
+.export-dropdown-item .item-hint { font-size: 10px; color: var(--text-muted); margin-left: 4px; font-family: 'IBM Plex Mono', monospace; }
+.export-divider { height: 1px; background: var(--border); margin: 6px 18px; }
+
+/* Edit / Present mode */
+body.edit-mode .click-zone { pointer-events: none; }
+body.edit-mode [contenteditable]:hover { outline: 1px dashed var(--accent); outline-offset: 2px; }
+body.edit-mode [contenteditable]:focus { outline: 2px solid var(--accent); outline-offset: 2px; background: rgba(75,147,40,0.04); border-radius: 4px; }
+body.present-mode #modeToggle,
+body.present-mode .export-wrapper,
+body.present-mode .progress,
+body.present-mode .slide-counter,
+body.present-mode .slide-controls { display: none !important; }
+body.present-mode .slide-frame { max-width: 100vw; max-height: 100vh; width: 100vw; height: 100vh; border-radius: 0; }
+
+/* Slide controls */
+.slide-controls {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  z-index: 300; display: none; align-items: center; gap: 8px;
+}
+body.edit-mode .slide-controls { display: flex; }
+.slide-controls .toolbar-btn { padding: 4px 12px; }
+.slide-controls .toolbar-btn.danger { border-color: rgba(201,135,58,0.4); }
+.slide-controls .toolbar-btn.danger:hover { border-color: #c9873a; background: rgba(201,135,58,0.1); }
+.slide-controls .toolbar-btn.danger .icon,
+.slide-controls .toolbar-btn.danger .label-text { color: #c9873a; }
+.slide-controls .slide-info {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  color: var(--text-muted); letter-spacing: 0.5px; padding: 0 6px;
+  text-transform: uppercase;
+}
+
+/* Hidden slides */
+body.edit-mode .slide.slide-hidden.active { outline: 2px dashed rgba(201,135,58,0.4); outline-offset: -2px; }
+.progress .dot-wrapper.hidden .dot { background: var(--text-muted); opacity: 0.3; }
+.progress .dot-wrapper.hidden .dot-label { text-decoration: line-through; opacity: 0.4; }
+.progress .dot-wrapper.hidden.active .dot { background: #c9873a; opacity: 0.6; box-shadow: none; }
+.progress .dot-wrapper.hidden.active .dot-label { color: #c9873a; opacity: 0.7; text-decoration: line-through; }
+
+/* ── Frame & slides ── */
+.deck-container { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; }
+.click-zone { position: fixed; top: 0; bottom: 0; width: 50%; z-index: 150; cursor: pointer; }
+.click-zone.left { left: 0; }
+.click-zone.right { right: 0; }
+.slide-frame {
+  width: min(96vw, 177.78vh); height: min(54vw, 100vh);
+  max-width: 1440px; max-height: 810px;
+  position: relative; overflow: hidden; z-index: 60;
+  background-image: var(--slide-bg-image);
+  background-size: var(--slide-bg-size);
+  background-position: center;
+  background-repeat: var(--slide-bg-repeat);
+  border-radius: 8px;
+}
+.slide-frame::before {
+  content: ''; position: absolute; inset: 0; z-index: 1;
+  background: var(--slide-content-overlay);
+  border-radius: 8px; pointer-events: none;
+  transition: background 0.4s ease;
+}
+.slide {
+  position: absolute; inset: 0; padding: 52px 72px; z-index: 2;
+  display: flex; flex-direction: column; justify-content: center;
+  opacity: 0; transition: opacity 0.45s ease; pointer-events: none;
+}
+.slide.active { opacity: 1; pointer-events: auto; }
+.slide .fragment { opacity: 0; transform: translateY(16px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.slide.active .fragment.visible { opacity: 1; transform: translateY(0); }
+
+/* ── Typography ── */
+h1 { font-size: 68px; font-weight: 600; letter-spacing: -2px; line-height: 1.1; margin-bottom: 16px; }
+h2 { font-size: 46px; font-weight: 600; letter-spacing: -1.5px; line-height: 1.15; margin-bottom: 24px; }
+h3 { font-size: 28px; font-weight: 500; margin-bottom: 10px; color: var(--accent); transition: color 0.4s ease; }
+.subtitle { font-size: 28px; color: var(--text-dim); font-weight: 300; letter-spacing: 0.5px; }
+.label { font-size: 16px; font-weight: 500; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 10px; }
+.big-number { font-family: 'IBM Plex Mono', monospace; font-size: 88px; font-weight: 600; color: var(--accent); line-height: 1; }
+.stat-label { font-size: 22px; color: var(--text-dim); margin-top: 6px; font-weight: 400; }
+.stat-item { display: flex; flex-direction: column; }
+.stat-grid { display: grid; gap: 32px; }
+.stat-grid.three-col { grid-template-columns: 1fr 1fr 1fr; }
+ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+ul li { font-size: 24px; line-height: 1.45; padding-left: 22px; position: relative; color: var(--text); font-weight: 400; }
+ul li::before { content: ''; position: absolute; left: 0; top: 14px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+ul li .dim { color: var(--text-dim); }
+ul li strong { font-weight: 600; }
+.green { color: var(--accent); }
+.mono { font-family: 'IBM Plex Mono', monospace; }
+.divider { width: 48px; height: 2px; background: var(--accent); margin: 20px 0; }
+/* Slide header row — label left, number right (matches Morpho pattern) */
+.slide-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+.slide-header h2 { margin-bottom: 0; }
+.slide-num { font-family: 'IBM Plex Mono', monospace; font-size: 16px; color: var(--text-muted); font-weight: 500; }
+
+/* ── Layout ── */
+.columns { display: grid; gap: 40px; }
+.columns.two { grid-template-columns: 1fr 1fr; }
+.columns.two-thirds { grid-template-columns: 1fr 2fr; }
+
+/* ── Cards ── */
+.diff-card { padding: 20px 24px; border: 1px solid var(--card-border); border-radius: 8px; background: var(--risk-bg); transition: border-color 0.4s ease, background 0.4s ease; }
+.diff-card h3 { font-size: 22px; margin-bottom: 6px; }
+.diff-card p { font-size: 18px; color: var(--text-dim); line-height: 1.5; }
+.diff-card .card-sub { font-size: 13px; font-family: 'IBM Plex Mono', monospace; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+
+/* ── Tables ── */
+table { width: 100%; border-collapse: collapse; font-size: 20px; }
+table th { text-align: left; padding: 8px 12px; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); border-bottom: 1px solid var(--border-light); white-space: nowrap; }
+table td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text-dim); font-weight: 400; line-height: 1.4; vertical-align: top; }
+table tr:last-child td { border-bottom: none; }
+table td:first-child { color: var(--text); font-weight: 500; }
+
+/* ── Progress ── */
+.progress {
+  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 4px; z-index: 200; align-items: flex-end;
+}
+.progress .dot-wrapper { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; padding: 4px 5px; }
+.progress .dot-label { font-family: 'IBM Plex Mono', monospace; font-size: 8px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.5px; white-space: nowrap; max-width: 90px; overflow: hidden; text-overflow: ellipsis; text-align: center; transition: all 0.25s ease; }
+.progress .dot-wrapper:hover .dot-label { color: var(--text-dim); }
+.progress .dot-wrapper.active .dot-label { color: var(--accent); font-weight: 600; }
+.progress .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dot-inactive); transition: all 0.3s ease; }
+.progress .dot-wrapper:hover .dot { background: var(--text-muted); }
+.progress .dot-wrapper.active .dot { background: var(--accent); box-shadow: 0 0 8px rgba(75,147,40,0.4); }
+.slide-counter { position: fixed; bottom: 28px; right: 40px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); z-index: 100; }
+
+/* ── Routing diagram ── */
+.routing-diagram { display: flex; align-items: stretch; gap: 12px; margin: 8px 0; }
+.routing-box { padding: 16px 14px; border: 1px solid var(--border-light); border-radius: 10px; text-align: center; transition: border-color 0.4s ease; display: flex; flex-direction: column; justify-content: center; }
+.routing-box.source { min-width: 100px; }
+.routing-box.hub { flex: 1; }
+.routing-box.target { min-width: 110px; }
+.routing-box .box-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; color: var(--accent); margin-bottom: 6px; }
+.routing-box .box-title { font-size: 20px; font-weight: 600; }
+.routing-box .box-items { display: flex; flex-direction: column; gap: 5px; margin-top: 6px; }
+.routing-box .box-item { font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: var(--code-text); background: var(--code-bg); padding: 6px 12px; border-radius: 6px; text-align: left; transition: background 0.4s ease, color 0.4s ease; }
+.routing-arrow { font-size: 28px; color: var(--accent); flex-shrink: 0; font-family: 'IBM Plex Mono', monospace; font-weight: 300; display: flex; align-items: center; }
+
+/* ── Title slide stat row ── */
+.title-stats { display: flex; gap: 48px; margin-top: 48px; }
+.title-stat { display: flex; flex-direction: column; }
+.title-stat-num { font-family: 'IBM Plex Mono', monospace; font-size: 36px; font-weight: 600; color: var(--accent); line-height: 1; }
+.title-stat-label { font-size: 14px; color: var(--text-muted); margin-top: 4px; font-weight: 400; text-transform: uppercase; letter-spacing: 1.5px; font-family: 'IBM Plex Mono', monospace; }
+
+@media print {
+  .toolbar, .export-dropdown, .progress, .slide-counter, .click-zone, .slide-controls { display: none !important; }
+  body { overflow: visible !important; height: auto !important; width: auto !important; display: block !important; background: white !important; color: #111 !important; }
+  .deck-container { width: auto !important; height: auto !important; display: block !important; position: static !important; }
+  .slide-frame { width: 100% !important; height: auto !important; max-width: none !important; max-height: none !important; position: static !important; overflow: visible !important; }
+  .slide .fragment { opacity: 1 !important; transform: none !important; }
+  body.print-all .slide { position: static !important; opacity: 1 !important; pointer-events: auto !important; display: flex !important; page-break-after: always; padding: 48px !important; min-height: 90vh; }
+  body.print-all .slide:last-child { page-break-after: auto; }
+  body.print-current .slide { display: none !important; }
+  body.print-current .slide.active { display: flex !important; position: static !important; opacity: 1 !important; padding: 48px !important; min-height: 90vh; }
+  h1, h2, h3 { color: #111 !important; }
+  p, li, td { color: #444 !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="toolbar" id="toolbar">
+  <div class="toolbar-btn" id="modeToggle" onclick="toggleMode()">
+    <span class="icon" id="modeIcon">&#9998;</span>
+    <span class="label-text" id="modeLabel">edit</span>
+  </div>
+  <div class="export-wrapper">
+    <div class="toolbar-btn" id="exportBtn" onclick="toggleExport(event)">
+      <span class="icon">&darr;</span>
+      <span class="label-text" id="exportLabel">export</span>
+    </div>
+    <div class="export-dropdown" id="exportDropdown">
+      <div class="export-dropdown-item" onclick="exportMarkdown('current')">Copy this slide as Markdown <span class="item-hint">clipboard</span></div>
+      <div class="export-dropdown-item" onclick="exportMarkdown('all')">Copy all slides as Markdown <span class="item-hint">clipboard</span></div>
+      <div class="export-divider"></div>
+      <div class="export-dropdown-item" onclick="exportPDF('current')">Print this slide as PDF <span class="item-hint">&#8984;P</span></div>
+      <div class="export-dropdown-item" onclick="exportPDF('all')">Print all slides as PDF <span class="item-hint">&#8984;P</span></div>
+    </div>
+  </div>
+  <div class="toolbar-btn" id="themeToggle" onclick="toggleTheme()">
+    <span class="icon icon-moon">&#9790;</span>
+    <span class="icon icon-sun">&#9788;</span>
+    <span class="label-text" id="themeLabel">dark</span>
+  </div>
+</div>
+<div class="slide-controls" id="slideControls">
+  <span class="slide-info" id="slideInfo">Slide 1</span>
+  <div class="toolbar-btn" id="hideSlideBtn" onclick="toggleHideSlide()">
+    <span class="icon" id="hideIcon">&#128065;</span>
+    <span class="label-text" id="hideLabel">hide</span>
+  </div>
+  <div class="toolbar-btn danger" id="deleteSlideBtn" onclick="deleteCurrentSlide()" style="display:none;">
+    <span class="icon">&#128465;</span>
+    <span class="label-text">delete</span>
+  </div>
+</div>
+<div class="click-zone left" onclick="prev()"></div>
+<div class="click-zone right" onclick="next()"></div>
+
+<div class="deck-container">
+
+  <div class="slide-frame" id="slideFrame">
+
+    <!-- ── SLIDE 0: Title ── -->
+    <div class="slide active" data-label="Euler">
+      <div>
+        <p class="label" data-edit-id="s0-label">Internal research · Cambrian Network</p>
+        <h1 class="fragment" data-edit-id="s0-h1">Euler<br><span style="color:var(--accent)">Protocol</span></h1>
+        <div class="divider fragment"></div>
+        <p class="subtitle fragment" data-edit-id="s0-sub">Modular vaults. Configurable risk.</p>
+        <div class="title-stats fragment">
+          <div class="title-stat">
+            <span class="title-stat-num" data-edit-id="s0-tvl">$317M</span>
+            <span class="title-stat-label">TVL</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 1: Overview ── -->
+    <div class="slide" data-label="Overview">
+      <div>
+        <div class="slide-header">
+          <p class="label fragment" data-edit-id="s1-label">Overview</p>
+          <span class="slide-num fragment">01</span>
+        </div>
+        <h2 class="fragment" data-edit-id="s1-h2">Where Euler sits</h2>
+        <div class="columns two" style="align-items:start;">
+          <div class="fragment">
+            <p style="font-size:22px;color:var(--text-dim);line-height:1.6;margin-bottom:24px;" data-edit-id="s1-desc">Euler V2 sits between Aave and Morpho. Modular vaults connected by a shared interoperability layer.</p>
+            <ul>
+              <li class="fragment" data-edit-id="s1-li1">Anyone can create vaults permissionlessly</li>
+              <li class="fragment" data-edit-id="s1-li2">Vaults can use any other vault as collateral</li>
+              <li class="fragment" data-edit-id="s1-li3">Risk is isolated per vault by default</li>
+            </ul>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="diff-card fragment" style="border-color:var(--accent);">
+              <div class="card-sub" data-edit-id="s1-evc-sub">Core Layer</div>
+              <h3 data-edit-id="s1-evc-h">EVC</h3>
+              <p data-edit-id="s1-evc-p">Ethereum Vault Connector. Standardizes how vaults talk to each other. Handles auth, batching, deferred solvency checks.</p>
+            </div>
+            <div style="text-align:center;font-size:13px;font-family:'IBM Plex Mono',monospace;color:var(--text-muted);letter-spacing:1px;">↑ built on top</div>
+            <div class="diff-card fragment">
+              <div class="card-sub" data-edit-id="s1-evk-sub">Vault Builder</div>
+              <h3 data-edit-id="s1-evk-h">EVK</h3>
+              <p data-edit-id="s1-evk-p">Euler Vault Kit. ERC-4626 credit vaults with borrowing on top. One token per vault, fully configurable at creation.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 2: Terminology ── -->
+    <div class="slide" data-label="Terminology">
+      <div>
+        <div class="slide-header">
+          <p class="label fragment" data-edit-id="sterm-label">Terminology</p>
+          <span class="slide-num fragment">02</span>
+        </div>
+        <h2 class="fragment" data-edit-id="sterm-h2">Vault, market, pair</h2>
+        <p class="fragment" style="font-size:20px;color:var(--text-dim);margin-bottom:28px;margin-top:-10px;" data-edit-id="sterm-sub">Three levels of abstraction. "Vault" in Euler isn't what "market" means in Morpho.</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+          <div class="diff-card fragment">
+            <h3 data-edit-id="sterm-c1h">Vault</h3>
+            <p data-edit-id="sterm-c1p">Single lending pool for one asset (e.g., a USDC vault). Closest equivalent to a Morpho market.</p>
+          </div>
+          <div class="diff-card fragment">
+            <h3 data-edit-id="sterm-c2h">Market</h3>
+            <p data-edit-id="sterm-c2p">Cluster of vaults grouped under the same governor (e.g., "Frontier Falcon", "Euler Prime").</p>
+          </div>
+          <div class="diff-card fragment">
+            <h3 data-edit-id="sterm-c3h">Pair</h3>
+            <p data-edit-id="sterm-c3p">Relationship between two vaults, one borrowing from the other. Where LTV, LLTV, and oracle live.</p>
+          </div>
+        </div>
+        <div class="fragment" style="margin-top:18px; background:rgba(75,147,40,0.06); border:1px solid rgba(75,147,40,0.25); border-radius:8px; padding:14px 18px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Example</div>
+          <p style="font-size:15px; color:var(--text-dim); line-height:1.55;" data-edit-id="sterm-ex-p">Same USDC collateral vault: 94% Max LTV when paired with USDT debt vault, 90% when paired with USDf. Risk parameters live on the pair, not the collateral.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 3: EVC ── -->
+    <div class="slide" data-label="EVC">
+      <div>
+        <div class="slide-header">
+          <p class="label fragment" data-edit-id="s2-label">Ethereum Vault Connector</p>
+          <span class="slide-num fragment">03</span>
+        </div>
+        <h2 class="fragment" data-edit-id="s2-h2">The interoperability layer</h2>
+        <p class="fragment" style="font-size:20px;color:var(--text-dim);margin-bottom:28px;margin-top:-10px;" data-edit-id="s2-sub">Vaults don't talk to each other directly. They talk through the EVC.</p>
+        <div class="columns two">
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="diff-card fragment">
+              <h3 data-edit-id="s2-c1h">Collateral vault</h3>
+              <p data-edit-id="s2-c1p">Deposits used as collateral for borrowing in other vaults. Multiple can be enabled per account.</p>
+            </div>
+            <div class="diff-card fragment">
+              <h3 data-edit-id="s2-c2h">Controller vault</h3>
+              <p data-edit-id="s2-c2p">The vault a user enables to borrow from. One controller per account at a time. All enabled collateral is under its control.</p>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="diff-card fragment">
+              <h3 data-edit-id="s2-c3h">Batching</h3>
+              <p data-edit-id="s2-c3p">Bundle multiple operations across vaults into one transaction. All succeed or all fail. Critical for complex multi-step strategies.</p>
+            </div>
+            <div class="diff-card fragment">
+              <h3 data-edit-id="s2-c4h">Deferred checks</h3>
+              <p data-edit-id="s2-c4p">Solvency checks deferred to end of batch. Constraints can be temporarily violated mid-batch as long as everything is healthy at the end.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 3: EVK ── -->
+    <div class="slide" data-label="EVK">
+      <div>
+        <div class="slide-header">
+          <p class="label fragment" data-edit-id="s4-label">Euler Vault Kit</p>
+          <span class="slide-num fragment">04</span>
+        </div>
+        <h2 class="fragment" data-edit-id="s4-h2">ERC-4626 vaults with borrowing on top</h2>
+        <p class="fragment" style="font-size:20px;color:var(--text-dim);margin-bottom:28px;margin-top:-10px;" data-edit-id="s4-sub">One token per vault. Fully configurable at creation.</p>
+        <p style="font-size:14px;font-family:'IBM Plex Mono',monospace;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;">Vault components</p>
+        <div class="columns two" style="gap:14px;">
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="diff-card fragment" style="padding:12px 16px;">
+              <h3 style="font-size:18px;margin-bottom:3px;" data-edit-id="s4-c0h">Underlying asset</h3>
+              <p style="font-size:15px;" data-edit-id="s4-c0p">The ERC-20 token the vault holds. Always one per vault.</p>
+            </div>
+            <div class="diff-card fragment" style="padding:12px 16px;">
+              <h3 style="font-size:18px;margin-bottom:3px;" data-edit-id="s4-c1h">EVault</h3>
+              <p style="font-size:15px;" data-edit-id="s4-c1p">Main contract. Tracks deposits and borrows, checks position health, executes liquidations.</p>
+            </div>
+            <div class="diff-card fragment" style="padding:12px 16px;">
+              <h3 style="font-size:18px;margin-bottom:3px;" data-edit-id="s4-c2h">Price oracle</h3>
+              <p style="font-size:15px;" data-edit-id="s4-c2p">Connects to external pricing systems for real-time collateral and debt values.</p>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="diff-card fragment" style="padding:12px 16px;">
+              <h3 style="font-size:18px;margin-bottom:3px;" data-edit-id="s4-c3h">IRM</h3>
+              <p style="font-size:15px;" data-edit-id="s4-c3p">Kink model or Adaptive Curve. Sets borrowing rates based on market conditions to balance supply and demand.</p>
+            </div>
+            <div class="diff-card fragment" style="padding:12px 16px;">
+              <h3 style="font-size:18px;margin-bottom:3px;" data-edit-id="s4-c5h">ProtocolConfig</h3>
+              <p style="font-size:15px;" data-edit-id="s4-c5p">Global config. Controls where fees go and how they are split.</p>
+            </div>
+            <div class="diff-card fragment" style="padding:12px 16px;">
+              <h3 style="font-size:18px;margin-bottom:3px;" data-edit-id="s4-c4h">DToken</h3>
+              <p style="font-size:15px;" data-edit-id="s4-c4p">Read-only ERC-20 for debt. Makes borrow amounts visible in block explorers.</p>
+            </div>
+          </div>
+        </div>
+        <div class="fragment" style="margin-top:14px; background:var(--surface); border:1px solid var(--border-light); border-radius:8px; padding:11px 16px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px;">Advanced configuration</div>
+          <p style="font-size:14px; color:var(--text-dim); line-height:1.55;" data-edit-id="s4-adv-p">The same collateral vault can be assigned different LTVs and price oracles by each borrower vault. Same collateral source, different risk parameters per loan.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 5: Vault types ── -->
+    <div class="slide" data-label="Vault types">
+      <div>
+        <div class="slide-header">
+          <p class="label fragment" data-edit-id="svt-label">Vault types</p>
+          <span class="slide-num fragment">05</span>
+        </div>
+        <h2 class="fragment" data-edit-id="svt-h2">Main vault types</h2>
+        <p class="fragment" style="font-size:20px;color:var(--text-dim);margin-bottom:28px;margin-top:-10px;" data-edit-id="svt-sub">Who manages the vault determines how risk parameters change over time.</p>
+        <div class="columns two">
+          <div class="diff-card fragment" style="padding:18px 22px;">
+            <h3 data-edit-id="svt-v1h">Governed</h3>
+            <p data-edit-id="svt-v1p">Managed by KYB-verified risk curators. Best for passive lenders. Active parameter management.</p>
+          </div>
+          <div class="diff-card fragment" style="padding:18px 22px;">
+            <h3 data-edit-id="svt-v2h">Ungoverned</h3>
+            <p data-edit-id="svt-v2p">No governor, fixed parameters. Users manage their own risk. Two subtypes depending on whether the accepted collateral carries governance exposure.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 6: Liquidations ── -->
+    <div class="slide" data-label="Liquidations">
+      <div>
+        <div class="slide-header">
+          <p class="label fragment" data-edit-id="s5-label">Liquidations</p>
+          <span class="slide-num fragment">06</span>
+        </div>
+        <h2 class="fragment" data-edit-id="s5-h2">More sophisticated than most protocols</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:18px;">
+          <div class="diff-card fragment">
+            <h3 data-edit-id="s5-c1h">Reverse Dutch auction</h3>
+            <p data-edit-id="s5-c1p">Discount grows with how unhealthy the position is. HF=0.98 → 2% bonus. Worse position, bigger incentive. No over-penalty for small violations.</p>
+          </div>
+          <div class="diff-card fragment">
+            <h3 data-edit-id="s5-c2h">LTV ramping</h3>
+            <p data-edit-id="s5-c2p">Governors reduce LTV gradually instead of instantly. Positions become unhealthy over time, getting liquidated at minimal loss. Avoids cascade events.</p>
+          </div>
+          <div class="diff-card fragment">
+            <h3 data-edit-id="s5-c3h">Bad debt socialization</h3>
+            <p data-edit-id="s5-c3p">Default: losses shared across all depositors when collateral can't cover obligations. Governors can disable.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 7: Oracles ── -->
+    <div class="slide" data-label="Oracles">
+      <div>
+        <div class="slide-header">
+          <p class="label fragment" data-edit-id="sorc-label">Oracles</p>
+          <span class="slide-num fragment">07</span>
+        </div>
+        <h2 class="fragment" data-edit-id="sorc-h2">Adapter + router per vault</h2>
+        <p class="fragment" style="font-size:20px;color:var(--text-dim);margin-bottom:28px;margin-top:-10px;" data-edit-id="sorc-sub">Oracle-agnostic. Each vault composes its own pricing from modular pieces.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="diff-card fragment">
+            <h3 data-edit-id="s5-o1h">Adapters</h3>
+            <p data-edit-id="s5-o1p">Translate a specific feed (Chainlink, Pyth, RedStone) into Euler's standard format. Each adapter is immutable and ungoverned.</p>
+          </div>
+          <div class="diff-card fragment">
+            <h3 data-edit-id="s5-o2h">Router</h3>
+            <p data-edit-id="s5-o2p">What the vault actually connects to. Routes price queries to the right adapter per asset pair. Can be governed or made immutable.</p>
+          </div>
+        </div>
+        <div class="fragment" style="margin-top:14px; background:var(--surface); border:1px solid var(--border-light); border-radius:8px; padding:11px 16px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px;">Push vs Pull</div>
+          <p style="font-size:14px; color:var(--text-dim); line-height:1.55;" data-edit-id="s5-o3p">Push (Chainlink): updated externally, can go stale silently. Pull (Pyth): consumer-updated, 2–3 min validity, lower gas. Different risk profiles.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 6: EulerEarn & DAO Markets ── -->
+    <div class="slide" data-label="EulerEarn">
+      <div>
+        <div class="slide-header">
+          <p class="label fragment" data-edit-id="s6-label">EulerEarn &amp; DAO Markets</p>
+          <span class="slide-num fragment">08</span>
+        </div>
+        <h2 class="fragment" data-edit-id="s6-h2">Passive yield layer on top of EVK</h2>
+        <p class="fragment" style="font-size:20px;color:var(--text-dim);margin-bottom:28px;margin-top:-10px;" data-edit-id="s6-sub">Same architecture as Morpho MetaVaults.</p>
+        <div class="columns two">
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="diff-card fragment">
+              <div class="card-sub" data-edit-id="s6-fork-sub">Forked from Morpho MetaVaults</div>
+              <p data-edit-id="s6-fork-p">Deposits one asset, allocates across up to 30 EVK strategies via supply/withdraw queues.</p>
+            </div>
+            <div class="diff-card fragment">
+              <div class="card-sub" data-edit-id="s6-roles-sub">Same four-role structure</div>
+              <p data-edit-id="s6-roles-p">Owner, curator, allocator, guardian.</p>
+            </div>
+            <div class="diff-card fragment">
+              <div class="card-sub" data-edit-id="s6-fee-sub">Performance fee</div>
+              <p data-edit-id="s6-fee-p">Up to 50% of net positive yield. Minted as vault shares. Identical to Morpho V1.</p>
+            </div>
+            <div class="diff-card fragment">
+              <div class="card-sub" data-edit-id="s6-loss-sub">Loss handling</div>
+              <p data-edit-id="s6-loss-p">Tracked via <span class="mono">lostAssets</span>. Share price stays stable. Last withdrawers absorb bad debt, same as Morpho V1.1.</p>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <p style="font-size:14px;font-family:'IBM Plex Mono',monospace;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;">Euler DAO markets</p>
+            <div class="diff-card fragment">
+              <h3 data-edit-id="s6-prime-h">Euler Prime</h3>
+              <div class="card-sub" style="margin-top:-4px;margin-bottom:8px;" data-edit-id="s6-prime-sub">Conservative · blue-chip assets only</div>
+              <p data-edit-id="s6-prime-p">Managed with Gauntlet. Designed as a trusted collateral hub.</p>
+            </div>
+            <div class="diff-card fragment">
+              <h3 data-edit-id="s6-yield-h">Euler Yield</h3>
+              <div class="card-sub" style="margin-top:-4px;margin-bottom:8px;" data-edit-id="s6-yield-sub">Yield-bearing collateral</div>
+              <p data-edit-id="s6-yield-p">Accepts sUSDe, sdeUSD, Pendle PT tokens. Isolated from Prime's conservative environment.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 7: Key Takeaways ── -->
+    <div class="slide" data-label="Takeaways">
+      <div>
+        <div class="slide-header">
+          <p class="label fragment" data-edit-id="s7-label">Key takeaways</p>
+          <span class="slide-num fragment">09</span>
+        </div>
+        <h2 class="fragment" data-edit-id="s7-h2">What to remember</h2>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:8px;">
+          <div class="diff-card fragment" style="display:flex;align-items:start;gap:20px;padding:16px 20px;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:var(--accent);flex-shrink:0;line-height:1.3;">01</span>
+            <div>
+              <h3 style="font-size:20px;margin-bottom:4px;" data-edit-id="s7-t1h">EVC is the core innovation</h3>
+              <p style="font-size:16px;" data-edit-id="s7-t1p">Vaults use each other as collateral through a standardized interoperability layer.</p>
+            </div>
+          </div>
+          <div class="diff-card fragment" style="display:flex;align-items:start;gap:20px;padding:16px 20px;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:var(--accent);flex-shrink:0;line-height:1.3;">02</span>
+            <div>
+              <h3 style="font-size:20px;margin-bottom:4px;" data-edit-id="s7-t2h">Rehypothecation is opt-in</h3>
+              <p style="font-size:16px;" data-edit-id="s7-t2p">More capital efficient than Morpho's isolated model but adds contagion risk depending on cluster setup. Simple pairs behave like Morpho markets.</p>
+            </div>
+          </div>
+          <div class="diff-card fragment" style="display:flex;align-items:start;gap:20px;padding:16px 20px;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:var(--accent);flex-shrink:0;line-height:1.3;">03</span>
+            <div>
+              <h3 style="font-size:20px;margin-bottom:4px;" data-edit-id="s7-t3h">Liquidations</h3>
+              <p style="font-size:16px;" data-edit-id="s7-t3p">Reverse Dutch auction, discount scales with how unhealthy the position is. Small violations get small penalties.</p>
+            </div>
+          </div>
+          <div class="diff-card fragment" style="display:flex;align-items:start;gap:20px;padding:16px 20px;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:var(--accent);flex-shrink:0;line-height:1.3;">04</span>
+            <div>
+              <h3 style="font-size:20px;margin-bottom:4px;" data-edit-id="s7-t4h">EulerEarn is a Morpho MetaVault fork</h3>
+              <p style="font-size:16px;" data-edit-id="s7-t4p">Same four-role structure, same fee model, same loss handling behavior.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 8: Annex: Transaction flows ── -->
+    <div class="slide" data-label="Annex: Transaction flows">
+      <div>
+        <div class="slide-header">
+          <p class="label fragment" data-edit-id="s8-label">Annex</p>
+          <span class="slide-num fragment">A1</span>
+        </div>
+        <h2 class="fragment" style="font-size:22px; margin-bottom:12px;" data-edit-id="s8-h2">USDC lifecycle on Euler Base</h2>
+        <p class="fragment" style="font-size:12px; color:var(--text-dim); margin-bottom:14px;" data-edit-id="s8-sub">Three transactions. Every user call is wrapped by the EVC.</p>
+        <div class="fragment" style="display:grid; grid-template-columns:repeat(3,1fr); gap:9px;">
+
+          <div style="background:var(--surface); border:1px solid var(--border-light); border-radius:8px; padding:12px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">01 — Lend USDC deposit (first-time)</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--code-text); background:var(--code-bg); border-radius:5px; padding:7px 9px; line-height:1.7; margin-bottom:8px;">
+              OwnerRegistered<br>TermsOfUseSigned<br>Permit<br>Deposit (USDC → vault, eToken → wallet)<br>VaultStatus (by the vault)<br>VaultStatusCheck (by the EVC)
+            </div>
+            <div style="font-size:11px; color:var(--text-dim); line-height:1.5;">First-time setup: EVC registers the wallet, Terms Of Use signed on-chain, Permit2 authorized, then deposit. 4.93 USDC → 4.688935 eTokens.</div>
+          </div>
+
+          <div style="background:var(--surface); border:1px solid var(--border-light); border-radius:8px; padding:12px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">02 — USDC collateral + cbBTC borrow</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--code-text); background:var(--code-bg); border-radius:5px; padding:7px 9px; line-height:1.7; margin-bottom:8px;">
+              Permit<br>Deposit (USDC → vault, eToken → sub-acct)<br>ControllerStatus — cbBTC vault (by the EVC)<br>CollateralStatus — USDC vault (by the EVC)<br>Borrow (debt → sub-acct, cbBTC → wallet)<br>AccountStatusCheck (by the EVC)<br>VaultStatus × 2 (by the vaults)<br>VaultStatusCheck × 2 (by the EVC)
+            </div>
+            <div style="font-size:11px; color:var(--text-dim); line-height:1.5;">Collateral and debt live in sub-account <code style="font-family:'IBM Plex Mono',monospace; color:var(--code-text);">...Adf</code>. Borrowed cbBTC lands in the main wallet. Solvency check runs only at the end.</div>
+          </div>
+
+          <div style="background:var(--surface); border:1px solid var(--border-light); border-radius:8px; padding:12px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">03 — Earn USDC deposit</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--code-text); background:var(--code-bg); border-radius:5px; padding:7px 9px; line-height:1.7; margin-bottom:8px;">
+              Permit<br>UpdateLastTotalAssets<br>UpdateLostAssets<br>AccrueInterest<br>Deposit (USDC → Earn, Earn share → wallet)<br>Deposit (USDC → Lend, Lend eToken → Earn)<br>UpdateLastTotalAssets<br>VaultStatus (by the vault)
+            </div>
+            <div style="font-size:11px; color:var(--text-dim); line-height:1.5;">Earn vault re-routes the deposit into Lend. User holds Earn shares, Earn vault holds Lend eTokens. MetaMorpho-style allocation.</div>
+          </div>
+
+        </div>
+
+        <div class="fragment" style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:9px;">
+          <div style="background:rgba(75,147,40,0.06); border:1px solid rgba(75,147,40,0.25); border-radius:8px; padding:10px 14px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Every call through the EVC</div>
+            <p style="font-size:12px; color:var(--text-dim); line-height:1.5;">The user interacts with the EVC, not the vault directly. <code style="font-family:'IBM Plex Mono',monospace; color:var(--code-text);">CallWithContext</code> wraps every call with caller, <code style="font-family:'IBM Plex Mono',monospace; color:var(--code-text);">onBehalfOfAccount</code>, and target. This is what enables sub-account accounting.</p>
+          </div>
+          <div style="background:rgba(75,147,40,0.06); border:1px solid rgba(75,147,40,0.25); border-radius:8px; padding:10px 14px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Where funds sit</div>
+            <p style="font-size:12px; color:var(--text-dim); line-height:1.5;">Each vault is its own ERC-4626 contract and holds its own ERC-20 directly. No singleton like Morpho, no aToken-style logic split like Aave.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 9: Annex: Key mechanics ── -->
+    <div class="slide" data-label="Annex: Key mechanics">
+      <div>
+        <div class="slide-header">
+          <p class="label fragment" data-edit-id="s9-label">Annex</p>
+          <span class="slide-num fragment">A2</span>
+        </div>
+        <h2 class="fragment" style="font-size:22px; margin-bottom:14px;" data-edit-id="s9-h2">A few mechanics worth understanding</h2>
+
+        <div class="fragment" style="margin-bottom:12px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Sub-accounts and onBehalfOfAccount</div>
+          <div style="background:var(--surface); border:1px solid var(--border-light); border-radius:8px; padding:12px 14px;">
+            <div style="font-size:13px; font-weight:600; color:var(--text); margin-bottom:6px;">How it works</div>
+            <p style="font-size:12px; color:var(--text-dim); line-height:1.55;">Each wallet has 256 virtual sub-accounts. Deposits and debts can be assigned to any of them via the EVC's <code style="font-family:'IBM Plex Mono',monospace; color:var(--code-text);">onBehalfOfAccount</code> field. In TX2, the USDC collateral and cbBTC debt live at sub-account <code style="font-family:'IBM Plex Mono',monospace; color:var(--code-text);">...Adf</code>, but the borrowed cbBTC goes to the main wallet (<code style="font-family:'IBM Plex Mono',monospace; color:var(--code-text);">...Ade</code>).</p>
+          </div>
+        </div>
+
+        <div class="fragment">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Deferred status checks</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:9px;">
+            <div style="background:rgba(75,147,40,0.06); border:1px solid rgba(75,147,40,0.25); border-radius:8px; padding:12px 14px;">
+              <div style="font-size:13px; font-weight:600; color:var(--accent); margin-bottom:6px;">VaultStatusCheck</div>
+              <p style="font-size:12px; color:var(--text-dim); line-height:1.55;">"Is this vault healthy?" Checks vault-level invariants (caps, accounting). One per affected vault.</p>
+            </div>
+            <div style="background:rgba(75,147,40,0.06); border:1px solid rgba(75,147,40,0.25); border-radius:8px; padding:12px 14px;">
+              <div style="font-size:13px; font-weight:600; color:var(--accent); margin-bottom:6px;">AccountStatusCheck</div>
+              <p style="font-size:12px; color:var(--text-dim); line-height:1.55;">"Is this borrower solvent?" Checks collateral covers debt for a specific sub-account. Only fires if a controller is enabled.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="fragment" style="margin-top:12px; background:var(--surface); border:1px solid var(--border-light); border-radius:8px; padding:11px 14px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px;">Routing: Aave vs Morpho vs Euler</div>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);">Aave:</span>
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--code-text);">User → Pool Proxy → aToken contract</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:5px;">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);">Morpho:</span>
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--code-text);">User → Router → Vault → Morpho main contract</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:5px;">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);">Euler:</span>
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--code-text);">User → EVC → Vault (context-wrapped)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="progress" id="progress"></div>
+  <div class="slide-counter" id="counter"></div>
+</div>
+
+<script>
+(function() {
+  let slides = Array.from(document.querySelectorAll('.slide'));
+  let totalSlides = slides.length;
+  let current = 0;
+  let fragmentQueue = [];
+  let fragmentIndex = 0;
+  const hiddenSlides = new Set();
+  const storageKey = 'deck-hidden-' + document.title.replace(/[^a-zA-Z0-9]/g, '-');
+
+  function saveHidden() { localStorage.setItem(storageKey, JSON.stringify([...hiddenSlides])); }
+  function loadHidden() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      saved.forEach(i => { if (i >= 0 && i < totalSlides) { hiddenSlides.add(i); slides[i].classList.add('slide-hidden'); } });
+    } catch(e) {}
+  }
+  loadHidden();
+
+  // Text edit persistence
+  const editsKey = 'deck-edits-' + document.title.replace(/[^a-zA-Z0-9]/g, '-');
+
+  function saveEdits() {
+    const data = {};
+    slides.forEach((s, i) => {
+      const slideEdits = {};
+      s.querySelectorAll('[data-edit-id]').forEach(el => {
+        slideEdits[el.getAttribute('data-edit-id')] = el.innerHTML;
+      });
+      if (Object.keys(slideEdits).length) data[i] = slideEdits;
+    });
+    localStorage.setItem(editsKey, JSON.stringify(data));
+  }
+
+  function loadEdits() {
+    try {
+      const data = JSON.parse(localStorage.getItem(editsKey) || '{}');
+      Object.keys(data).forEach(slideIdx => {
+        const i = parseInt(slideIdx);
+        if (i >= 0 && i < totalSlides) {
+          Object.keys(data[slideIdx]).forEach(editId => {
+            const el = slides[i].querySelector('[data-edit-id="' + editId + '"]');
+            if (el) el.innerHTML = data[slideIdx][editId];
+          });
+        }
+      });
+    } catch(e) {}
+  }
+
+  // Tag all editable elements with stable IDs
+  (function tagEditables() {
+    const editableSelectors = 'h1, h2, h3, p, li, td, th, .subtitle, .label, .stat-label, .big-number, .card-sub, .title-stat-num, .title-stat-label';
+    slides.forEach((s, si) => {
+      let counter = 0;
+      s.querySelectorAll(editableSelectors).forEach(el => {
+        if (!el.getAttribute('data-edit-id')) {
+          el.setAttribute('data-edit-id', 's' + si + '-e' + counter);
+        }
+        counter++;
+      });
+    });
+  })();
+  loadEdits();
+
+  document.addEventListener('blur', function(e) {
+    if (e.target && e.target.getAttribute && e.target.getAttribute('data-edit-id')) {
+      saveEdits();
+    }
+  }, true);
+
+  const progressEl = document.getElementById('progress');
+
+  function buildProgressDots() {
+    progressEl.innerHTML = '';
+    for (let i = 0; i < totalSlides; i++) {
+      const slideEl = slides[i];
+      let title = slideEl.getAttribute('data-title') || slideEl.getAttribute('data-label') || '';
+      if (!title) {
+        const h2 = slideEl.querySelector('h2');
+        const h1 = slideEl.querySelector('h1');
+        const lbl = slideEl.querySelector('.label');
+        if (h2) title = h2.textContent.trim().split('\n')[0];
+        else if (h1) title = h1.textContent.trim().split('\n')[0];
+        else if (lbl) title = lbl.textContent.trim();
+        if (title.length > 16) title = title.substring(0, 14) + '\u2026';
+      }
+      const wrapper = document.createElement('div');
+      wrapper.className = 'dot-wrapper' + (i === current ? ' active' : '') + (hiddenSlides.has(i) ? ' hidden' : '');
+      const labelEl = document.createElement('div');
+      labelEl.className = 'dot-label';
+      labelEl.textContent = title;
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      wrapper.appendChild(labelEl);
+      wrapper.appendChild(dot);
+      wrapper.addEventListener('click', ((idx) => (e) => { e.stopPropagation(); goToSlide(idx); })(i));
+      progressEl.appendChild(wrapper);
+    }
+  }
+  buildProgressDots();
+
+  function updateCounter() {
+    if (hiddenSlides.has(current)) {
+      document.getElementById('counter').textContent = (current + 1) + ' / ' + totalSlides + ' [hidden]';
+    } else {
+      let visibleIdx = 0;
+      for (let i = 0; i <= current; i++) { if (!hiddenSlides.has(i)) visibleIdx++; }
+      document.getElementById('counter').textContent = visibleIdx + ' / ' + (totalSlides - hiddenSlides.size);
+    }
+  }
+  function buildFragmentQueue(slideEl) { fragmentQueue = Array.from(slideEl.querySelectorAll('.fragment')); fragmentIndex = 0; fragmentQueue.forEach(f => f.classList.remove('visible')); }
+  function showAllFragments(slideEl) { const frags = slideEl.querySelectorAll('.fragment'); frags.forEach(f => f.classList.add('visible')); fragmentQueue = Array.from(frags); fragmentIndex = fragmentQueue.length; }
+  function revealNextFragment() { if (fragmentIndex < fragmentQueue.length) { fragmentQueue[fragmentIndex].classList.add('visible'); fragmentIndex++; return true; } return false; }
+  function hideLastFragment() { if (fragmentIndex > 0) { fragmentIndex--; fragmentQueue[fragmentIndex].classList.remove('visible'); return true; } return false; }
+
+  function findVisibleSlide(from, dir) {
+    let idx = from + dir;
+    while (idx >= 0 && idx < totalSlides) {
+      if (!hiddenSlides.has(idx)) return idx;
+      idx += dir;
+    }
+    return -1;
+  }
+
+  // Auto-scale
+  function autoScaleSlide(slideEl) {
+    const inner = slideEl.children[0];
+    if (!inner) return;
+    inner.style.zoom = '1';
+    const style = getComputedStyle(slideEl);
+    const availH = slideEl.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+    const naturalH = inner.scrollHeight;
+    if (naturalH <= 0 || availH <= 0) return;
+    let scale = availH / naturalH;
+    if (scale > 1) scale = 1 + (scale - 1) * 0.5;
+    scale = Math.min(1.25, Math.max(0.55, scale));
+    if (scale > 0.97 && scale < 1.03) { inner.style.zoom = ''; return; }
+    inner.style.zoom = scale;
+  }
+
+  function goToSlide(index) {
+    if (index < 0 || index >= totalSlides || index === current) return;
+    slides[current].querySelectorAll('.fragment').forEach(f => f.classList.remove('visible'));
+    slides[current].classList.remove('active');
+    progressEl.children[current].classList.remove('active');
+    current = index;
+    slides[current].classList.add('active');
+    progressEl.children[current].classList.add('active');
+    updateCounter();
+    buildFragmentQueue(slides[current]);
+    updateSlideControls();
+    autoScaleSlide(slides[current]);
+  }
+
+  function next() {
+    if (fragmentIndex < fragmentQueue.length) { showAllFragments(slides[current]); return; }
+    const nextIdx = (currentMode === 'edit') ? current + 1 : findVisibleSlide(current, 1);
+    if (nextIdx >= 0 && nextIdx < totalSlides) goToSlide(nextIdx);
+  }
+
+  function prev() {
+    const prevIdx = (currentMode === 'edit') ? current - 1 : findVisibleSlide(current, -1);
+    if (prevIdx >= 0) {
+      slides[current].classList.remove('active');
+      progressEl.children[current].classList.remove('active');
+      current = prevIdx;
+      slides[current].classList.add('active');
+      progressEl.children[current].classList.add('active');
+      updateCounter();
+      showAllFragments(slides[current]);
+      updateSlideControls();
+      autoScaleSlide(slides[current]);
+    }
+  }
+
+  window.next = next;
+  window.prev = prev;
+
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+  document.addEventListener('touchend', (e) => { const d = touchStartX - e.changedTouches[0].screenX; if (Math.abs(d) > 50) { d > 0 ? next() : prev(); } });
+
+  // Theme
+  window.toggleTheme = function() {
+    const html = document.documentElement;
+    const cur = html.getAttribute('data-theme');
+    const nxt = cur === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', nxt);
+    document.getElementById('themeLabel').textContent = nxt;
+    localStorage.setItem('cambrian-deck-theme', nxt);
+  };
+  const savedTheme = localStorage.getItem('cambrian-deck-theme');
+  if (savedTheme) { document.documentElement.setAttribute('data-theme', savedTheme); document.getElementById('themeLabel').textContent = savedTheme; }
+
+  updateCounter();
+  buildFragmentQueue(slides[0]);
+  autoScaleSlide(slides[0]);
+  setTimeout(() => { revealNextFragment(); let i = 1; const iv = setInterval(() => { if (!revealNextFragment()) clearInterval(iv); i++; }, 120); }, 300);
+
+  window.addEventListener('resize', () => { autoScaleSlide(slides[current]); });
+
+  // Export
+  const exportBtn = document.getElementById('exportBtn');
+  const exportDropdown = document.getElementById('exportDropdown');
+  const exportLabel = document.getElementById('exportLabel');
+  window.toggleExport = function(e) { e.stopPropagation(); exportDropdown.classList.toggle('open'); };
+  document.addEventListener('click', (e) => {
+    if (!exportBtn.contains(e.target) && !exportDropdown.contains(e.target)) exportDropdown.classList.remove('open');
+  });
+
+  function slideToMarkdown(slideEl) {
+    const lines = [];
+    const label = slideEl.querySelector('.label');
+    const h1 = slideEl.querySelector('h1');
+    const h2 = slideEl.querySelector('h2');
+    if (label) lines.push('*' + label.textContent.trim() + '*');
+    if (h1) lines.push('# ' + h1.textContent.trim().replace(/\s+/g, ' '));
+    else if (h2) lines.push('## ' + h2.textContent.trim().replace(/\s+/g, ' '));
+    slideEl.querySelectorAll(':scope > div > p, :scope > div > div > p.subtitle').forEach(p => {
+      if (p.closest('.diff-card')) return;
+      const text = p.textContent.trim();
+      if (text) lines.push('', text);
+    });
+    slideEl.querySelectorAll('table').forEach(table => {
+      lines.push('');
+      const headers = [];
+      table.querySelectorAll('th').forEach(th => headers.push(th.textContent.trim()));
+      if (headers.length) { lines.push('| ' + headers.join(' | ') + ' |'); lines.push('| ' + headers.map(() => '---').join(' | ') + ' |'); }
+      table.querySelectorAll('tbody tr').forEach(tr => {
+        const cells = [];
+        tr.querySelectorAll('td').forEach(td => cells.push(td.textContent.trim().replace(/\s+/g, ' ')));
+        if (cells.length) lines.push('| ' + cells.join(' | ') + ' |');
+      });
+    });
+    slideEl.querySelectorAll('ul').forEach(ul => {
+      if (ul.closest('.diff-card')) return;
+      lines.push('');
+      ul.querySelectorAll(':scope > li').forEach(li => lines.push('- ' + li.textContent.trim().replace(/\s+/g, ' ')));
+    });
+    slideEl.querySelectorAll('.diff-card').forEach(card => {
+      const title = card.querySelector('h3')?.textContent.trim() || '';
+      const body = card.querySelector('p')?.textContent.trim() || '';
+      lines.push('', '**' + title + '**');
+      if (body) lines.push(body);
+    });
+    return lines.join('\n').trim();
+  }
+
+  window.exportMarkdown = function(scope) {
+    exportDropdown.classList.remove('open');
+    let md = '';
+    if (scope === 'current') { md = slideToMarkdown(slides[current]); }
+    else { const parts = []; slides.forEach((s, i) => { if (!hiddenSlides.has(i)) parts.push(slideToMarkdown(s)); }); md = parts.join('\n\n---\n\n'); }
+    navigator.clipboard.writeText(md).then(() => { exportBtn.classList.add('copied'); exportLabel.textContent = 'copied!'; setTimeout(() => { exportBtn.classList.remove('copied'); exportLabel.textContent = 'export'; }, 1500); });
+  };
+  window.exportPDF = function(scope) {
+    exportDropdown.classList.remove('open');
+    const cls = scope === 'current' ? 'print-current' : 'print-all';
+    document.body.classList.add(cls);
+    if (scope === 'all') { slides.forEach((s, i) => { if (!hiddenSlides.has(i)) s.querySelectorAll('.fragment').forEach(f => f.classList.add('visible')); }); }
+    else { slides[current].querySelectorAll('.fragment').forEach(f => f.classList.add('visible')); }
+    window.print();
+    window.addEventListener('afterprint', () => { document.body.classList.remove(cls); buildFragmentQueue(slides[current]); showAllFragments(slides[current]); }, { once: true });
+  };
+
+  // Edit / Present mode
+  let currentMode = 'view';
+  const editableSelectors = 'h1, h2, h3, p, li, td, th, .subtitle, .label, .stat-label, .big-number, .card-sub, .title-stat-num, .title-stat-label';
+
+  function setEditables(editable) {
+    slides.forEach(s => {
+      s.querySelectorAll(editableSelectors).forEach(el => {
+        if (editable) { el.setAttribute('contenteditable', 'true'); el.setAttribute('spellcheck', 'false'); }
+        else { el.removeAttribute('contenteditable'); el.removeAttribute('spellcheck'); }
+      });
+    });
+  }
+
+  function enterEditMode() {
+    currentMode = 'edit';
+    document.body.classList.add('edit-mode');
+    document.body.classList.remove('present-mode');
+    if (document.fullscreenElement) document.exitFullscreen();
+    setEditables(true);
+    showAllFragments(slides[current]);
+    document.getElementById('modeIcon').innerHTML = '&#9654;';
+    document.getElementById('modeLabel').textContent = 'present';
+    updateSlideControls();
+  }
+
+  function enterPresentMode() {
+    currentMode = 'present';
+    document.body.classList.remove('edit-mode');
+    document.body.classList.add('present-mode');
+    setEditables(false);
+    if (hiddenSlides.has(current)) {
+      const vis = findVisibleSlide(current, 1);
+      if (vis >= 0) goToSlide(vis);
+      else { const vis2 = findVisibleSlide(current, -1); if (vis2 >= 0) goToSlide(vis2); }
+    }
+    document.documentElement.requestFullscreen().catch(() => {});
+    document.getElementById('modeIcon').innerHTML = '&#9998;';
+    document.getElementById('modeLabel').textContent = 'edit';
+    setTimeout(() => autoScaleSlide(slides[current]), 100);
+  }
+
+  window.toggleMode = function() {
+    if (currentMode === 'view') enterEditMode();
+    else if (currentMode === 'edit') enterPresentMode();
+    else enterEditMode();
+  };
+
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && currentMode === 'present') {
+      currentMode = 'view';
+      document.body.classList.remove('present-mode');
+      document.getElementById('modeIcon').innerHTML = '&#9998;';
+      document.getElementById('modeLabel').textContent = 'edit';
+    }
+    setTimeout(() => autoScaleSlide(slides[current]), 100);
+  });
+
+  // Slide controls (hide / delete)
+  function updateSlideControls() {
+    const info = document.getElementById('slideInfo');
+    const hideIcon = document.getElementById('hideIcon');
+    const hideLabel = document.getElementById('hideLabel');
+    const deleteBtn = document.getElementById('deleteSlideBtn');
+    const isHidden = hiddenSlides.has(current);
+
+    info.textContent = 'Slide ' + (current + 1) + ' / ' + totalSlides;
+    if (isHidden) {
+      hideIcon.textContent = '\u25C9';
+      hideLabel.textContent = 'show';
+      deleteBtn.style.display = 'flex';
+    } else {
+      hideIcon.textContent = '\u25CE';
+      hideLabel.textContent = 'hide';
+      deleteBtn.style.display = 'none';
+    }
+  }
+  updateSlideControls();
+
+  window.toggleHideSlide = function() {
+    if (hiddenSlides.has(current)) {
+      hiddenSlides.delete(current);
+      slides[current].classList.remove('slide-hidden');
+      progressEl.children[current].classList.remove('hidden');
+    } else {
+      hiddenSlides.add(current);
+      slides[current].classList.add('slide-hidden');
+      progressEl.children[current].classList.add('hidden');
+    }
+    saveHidden();
+    updateSlideControls();
+    updateCounter();
+  };
+
+  window.deleteCurrentSlide = function() {
+    if (!confirm('Permanently delete slide ' + (current + 1) + '?\nThis cannot be undone.')) return;
+
+    const idx = current;
+    slides[idx].remove();
+
+    hiddenSlides.delete(idx);
+    const shifted = new Set();
+    hiddenSlides.forEach(h => { shifted.add(h > idx ? h - 1 : h); });
+    hiddenSlides.clear();
+    shifted.forEach(h => hiddenSlides.add(h));
+
+    slides = Array.from(document.querySelectorAll('.slide'));
+    totalSlides = slides.length;
+    if (totalSlides === 0) return;
+    if (current >= totalSlides) current = totalSlides - 1;
+
+    slides[current].classList.add('active');
+    saveHidden();
+    saveEdits();
+    buildProgressDots();
+    updateCounter();
+    buildFragmentQueue(slides[current]);
+    showAllFragments(slides[current]);
+    updateSlideControls();
+  };
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (currentMode === 'edit' && document.activeElement && document.activeElement.getAttribute('contenteditable') === 'true') return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); next(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prev(); }
+    else if (e.key === 'Home') { e.preventDefault(); goToSlide(0); }
+    else if (e.key === 'End') { e.preventDefault(); goToSlide(totalSlides - 1); }
+    else if (e.key === 'e' && !e.ctrlKey && !e.metaKey) { toggleMode(); }
+  });
+})();
+</script>
+</body>
+</html>

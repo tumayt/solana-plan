@@ -1,0 +1,119 @@
+{
+	"meta":
+	[
+		{
+			"name": "database",
+			"type": "String"
+		},
+		{
+			"name": "name",
+			"type": "String"
+		},
+		{
+			"name": "engine",
+			"type": "String"
+		},
+		{
+			"name": "partition_key",
+			"type": "String"
+		},
+		{
+			"name": "sorting_key",
+			"type": "String"
+		},
+		{
+			"name": "primary_key",
+			"type": "String"
+		},
+		{
+			"name": "total_rows",
+			"type": "Nullable(UInt64)"
+		},
+		{
+			"name": "total_bytes",
+			"type": "Nullable(UInt64)"
+		},
+		{
+			"name": "comment",
+			"type": "String"
+		},
+		{
+			"name": "parameters",
+			"type": "Array(String)"
+		}
+	],
+
+	"data":
+	[
+		["solana", "meteora_event_AddLiquidity", "MergeTree", "chain_id", "chain_id, block_number", "chain_id, block_number", 49437874, 7484938164, "", []]
+	],
+
+	"rows": 1,
+
+	"rows_before_limit_at_least": 1,
+
+	"statistics":
+	{
+		"elapsed": 0.038767528,
+		"rows_read": 1,
+		"bytes_read": 680
+	}
+}
+{
+	"meta":
+	[
+		{
+			"name": "name",
+			"type": "String"
+		},
+		{
+			"name": "type",
+			"type": "String"
+		},
+		{
+			"name": "default_type",
+			"type": "String"
+		},
+		{
+			"name": "default_expression",
+			"type": "String"
+		},
+		{
+			"name": "comment",
+			"type": "String"
+		},
+		{
+			"name": "codec_expression",
+			"type": "String"
+		},
+		{
+			"name": "ttl_expression",
+			"type": "String"
+		}
+	],
+
+	"data":
+	[
+		["chain_id", "UInt32", "", "", "", "", ""],
+		["block_number", "UInt64", "", "", "", "", ""],
+		["tx_signature", "FixedString(88)", "", "", "", "", ""],
+		["log_index", "UInt32", "", "", "", "", ""],
+		["block_time", "DateTime('UTC')", "", "", "", "", ""],
+		["program_id", "FixedString(44)", "", "", "", "", ""],
+		["tx_signer", "FixedString(44)", "", "", "", "", ""],
+		["lbPair", "FixedString(44)", "", "", "", "", ""],
+		["from", "FixedString(44)", "", "", "", "", ""],
+		["position", "FixedString(44)", "", "", "", "", ""],
+		["amounts", "Array(UInt64)", "", "", "", "", ""],
+		["activeBinId", "Int32", "", "", "", "", ""]
+	],
+
+	"rows": 12,
+
+	"statistics":
+	{
+		"elapsed": 0.001644547,
+		"rows_read": 12,
+		"bytes_read": 919
+	}
+}

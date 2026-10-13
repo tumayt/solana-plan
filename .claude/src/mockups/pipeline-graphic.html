@@ -1,0 +1,144 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&family=Figtree:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  /* Audited against live cambrian.org CSS, Aug 4 2026.
+     Two greens are deliberate: #4b9328 = CTA (primary-500);
+     #3b7120 = hero highlight blocks (primary-600), text #ecefd8 (primary-50).
+     Dark sections #1d3212 (primary-800). Page body sand #ecdfc3 (sand-300).
+     Card: bg #f2ede3, border #d7d2c8, asymmetric radius TL/BR. */
+  :root {
+    --green: #4b9328;
+    --green-deep: #3b7120;
+    --green-pale: #ecefd8;
+    --forest: #1d3212;
+    --sand: #ecdfc3;
+    --card: #f2ede3;
+    --card-border: #d7d2c8;
+    --ink: #204013;
+    --muted: #464032;
+    --muted-on-dark: #9faf97;
+  }
+  body { margin: 0; background: #888; }
+  .canvas {
+    width: 2400px;
+    height: 840px;
+    position: relative;
+    font-family: Figtree, sans-serif;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+  .light { background: var(--sand); }
+  .dark { background: var(--forest); }
+  .col { position: absolute; top: 140px; width: 560px; text-align: center; }
+  .art { height: 400px; position: relative; display: flex; align-items: center; justify-content: center; }
+  .stage-label {
+    font-family: "Crimson Text", serif;
+    font-weight: 600;
+    font-size: 52px;
+    letter-spacing: -0.4px;
+    color: var(--ink);
+    margin-top: 56px;
+    line-height: 1.15;
+  }
+  .dark .stage-label { color: var(--green-pale); }
+  .stage-label .hl { background: var(--green-deep); color: var(--green-pale); padding: 4px 18px 8px; }
+  .sub { font-size: 24px; color: var(--muted); margin-top: 14px; }
+  .dark .sub { color: var(--muted-on-dark); }
+  .arrow { position: absolute; top: 330px; width: 150px; height: 24px; }
+</style>
+</head>
+<body>
+
+<!-- ============ V1: site-exact, three columns ============ -->
+<div class="canvas light" id="v1">
+  <div class="col" style="left: 90px">
+    <div class="art"><svg class="chaos" width="560" height="400"></svg></div>
+    <div class="stage-label">Raw data</div>
+    <div class="sub">Onchain events, prices, social. Fragmented.</div>
+  </div>
+  <div class="col" style="left: 920px">
+    <div class="art"><svg class="grid" width="560" height="400"></svg></div>
+    <div class="stage-label">Indexed &amp; structured</div>
+    <div class="sub">One schema across chains and protocols</div>
+  </div>
+  <div class="col" style="left: 1750px">
+    <div class="art"><img src="cambrian_logo.png" style="height:320px" /></div>
+    <div class="stage-label"><span class="hl">Financial intelligence</span></div>
+    <div class="sub">Ready for agents, institutions, protocols</div>
+  </div>
+  <svg class="arrow" style="left: 700px" viewBox="0 0 150 24"><line x1="0" y1="12" x2="132" y2="12" stroke="#4b9328" stroke-width="4"/><path d="M130 2 L148 12 L130 22 Z" fill="#4b9328"/></svg>
+  <svg class="arrow" style="left: 1540px" viewBox="0 0 150 24"><line x1="0" y1="12" x2="132" y2="12" stroke="#4b9328" stroke-width="4"/><path d="M130 2 L148 12 L130 22 Z" fill="#4b9328"/></svg>
+</div>
+
+<!-- ============ V2: hero dark ============ -->
+<div class="canvas dark" id="v2">
+  <div class="col" style="left: 90px">
+    <div class="art"><svg class="chaos-dark" width="560" height="400"></svg></div>
+    <div class="stage-label">Raw data</div>
+    <div class="sub">Onchain events, prices, social. Fragmented.</div>
+  </div>
+  <div class="col" style="left: 920px">
+    <div class="art"><svg class="grid-dark" width="560" height="400"></svg></div>
+    <div class="stage-label">Indexed &amp; structured</div>
+    <div class="sub">One schema across chains and protocols</div>
+  </div>
+  <div class="col" style="left: 1750px">
+    <div class="art"><img src="cambrian_logo.png" style="height:320px" /></div>
+    <div class="stage-label"><span class="hl">Financial intelligence</span></div>
+    <div class="sub">Ready for agents, institutions, protocols</div>
+  </div>
+  <svg class="arrow" style="left: 700px" viewBox="0 0 150 24"><line x1="0" y1="12" x2="132" y2="12" stroke="#4b9328" stroke-width="4"/><path d="M130 2 L148 12 L130 22 Z" fill="#4b9328"/></svg>
+  <svg class="arrow" style="left: 1540px" viewBox="0 0 150 24"><line x1="0" y1="12" x2="132" y2="12" stroke="#4b9328" stroke-width="4"/><path d="M130 2 L148 12 L130 22 Z" fill="#4b9328"/></svg>
+</div>
+
+<script>
+  const NS = "http://www.w3.org/2000/svg";
+  const mk = (svg, tag, attrs) => {
+    const el = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    svg.appendChild(el);
+    return el;
+  };
+  const seeded = (seed) => () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+  function chaos(svg, palette, seed = 7) {
+    const rnd = seeded(seed);
+    const W = +svg.getAttribute("width"), H = +svg.getAttribute("height");
+    for (let i = 0; i < 46; i++) {
+      const s = 16 + rnd() * 22;
+      const x = W * 0.12 + rnd() * W * 0.7, y = H * 0.1 + rnd() * H * 0.75;
+      mk(svg, "rect", {
+        x, y, width: s, height: s,
+        fill: rnd() > 0.35 ? "none" : palette[i % palette.length],
+        stroke: palette[i % palette.length], "stroke-width": 2.5,
+        transform: `rotate(${(rnd() - 0.5) * 50} ${W / 2} ${H / 2})`,
+      });
+    }
+  }
+  function grid(svg, dark, accent, accents = [6, 12, 18]) {
+    const W = +svg.getAttribute("width"), H = +svg.getAttribute("height");
+    const x0 = (W - 5 * 72 + 20) / 2, y0 = (H - 5 * 72 + 20) / 2;
+    let k = 0;
+    for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) {
+      mk(svg, "rect", {
+        x: x0 + c * 72, y: y0 + r * 72, width: 52, height: 52, rx: 8,
+        fill: accents.includes(k) ? accent : dark,
+      });
+      k++;
+    }
+  }
+
+  const earth = ["#a89a78", "#bfae8a", "#6b7a5a", "#dfcea7", "#464032", "#8a8a72"];
+  document.querySelectorAll(".chaos").forEach((s) => chaos(s, earth));
+  document.querySelectorAll(".grid").forEach((s) => grid(s, "#1d3212", "#4b9328"));
+  const sage = ["#9faf97", "#c8dab1", "#78ad59", "#ecdfc3", "#617359", "#adcb94"];
+  document.querySelectorAll(".chaos-dark").forEach((s) => chaos(s, sage));
+  document.querySelectorAll(".grid-dark").forEach((s) => grid(s, "#ecefd8", "#4b9328"));
+
+</script>
+</body>
+</html>

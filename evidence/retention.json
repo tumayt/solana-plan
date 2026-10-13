@@ -1,0 +1,94 @@
+{
+	"meta":
+	[
+		{
+			"name": "name",
+			"type": "String"
+		},
+		{
+			"name": "sorting_key",
+			"type": "String"
+		},
+		{
+			"name": "partition_key",
+			"type": "String"
+		},
+		{
+			"name": "ttl",
+			"type": "String"
+		}
+	],
+
+	"data":
+	[
+		["meteora_add_liquidity_mv", "", "", ""],
+		["meteora_damm_v2_event_EvtAddLiquidity", "chain_id, block_number", "chain_id", ""],
+		["meteora_damm_v2_event_EvtSwap", "chain_id, block_number", "chain_id", ""],
+		["meteora_dlmm_pools", "", "", ""],
+		["meteora_event_AddLiquidity", "chain_id, block_number", "chain_id", ""],
+		["meteora_event_ClaimFee", "chain_id, block_number", "chain_id", ""],
+		["meteora_event_CompositionFee", "chain_id, block_number", "chain_id", ""],
+		["meteora_event_LbPairCreate", "chain_id, block_number", "chain_id", ""],
+		["meteora_event_RemoveLiquidity", "chain_id, block_number", "chain_id", ""],
+		["meteora_event_Swap", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_add_liquidity", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_add_liquidity_by_strategy", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_add_liquidity_by_strategy_one_side", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_add_liquidity_by_weight", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_add_liquidity_one_side", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_add_liquidity_one_side_precise", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_claim_fee", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_claim_reward", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_close_position", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_close_preset_parameter", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_fund_reward", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_go_to_a_bin", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_increase_oracle_length", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_initialize_bin_array_bitmap_extension", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_initialize_lb_pair", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_initialize_permission_lb_pair", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_initialize_position", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_initialize_position_by_operator", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_initialize_position_pda", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_initialize_preset_parameter", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_initialize_reward", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_migrate_bin_array", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_migrate_position", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_remove_all_liquidity", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_remove_liquidity", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_remove_liquidity_by_range", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_set_activation_point", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_set_pair_status", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_set_pre_activation_duration", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_set_pre_activation_swap_address", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_swap", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_swap_exact_out", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_update_base_fee_parameters", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_update_dynamic_fee_parameters", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_update_fees_and_rewards", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_update_position_operator", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_update_reward_duration", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_update_reward_funder", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_withdraw_ineligible_reward", "chain_id, block_number", "chain_id", ""],
+		["meteora_instruction_withdraw_protocol_fee", "chain_id, block_number", "chain_id", ""],
+		["meteora_pool_details_multi", "", "", ""],
+		["meteora_pool_info", "", "", ""],
+		["meteora_pool_info_2", "", "", ""],
+		["meteora_remove_liquidity_mv", "", "", ""],
+		["meteora_trades_mv", "", "", ""],
+		["pool_transactions_cache", "pool_address, slot, log_index, event_key", "toYYYYMM(block_timestamp)", "block_timestamp + toIntervalYear(1)"],
+		["trades", "provider, pool_address, token_in_address, token_out_address, block_hour, transaction_id", "toYYYYMM(block_timestamp)", "block_timestamp + toIntervalYear(1)"],
+		["transaction_token_balance", "chain_id, block_number, tx_signature, account, token", "toYYYYMM(block_time)", "block_time + toIntervalMonth(1)"]
+	],
+
+	"rows": 58,
+
+	"rows_before_limit_at_least": 58,
+
+	"statistics":
+	{
+		"elapsed": 0.05413985,
+		"rows_read": 58,
+		"bytes_read": 60768
+	}
+}

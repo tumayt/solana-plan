@@ -1,0 +1,33 @@
+{
+	"meta":
+	[
+		{
+			"name": "measured_at",
+			"type": "DateTime"
+		},
+		{
+			"name": "dlmm_bytes",
+			"type": "UInt64"
+		},
+		{
+			"name": "balance_bytes",
+			"type": "UInt64"
+		}
+	],
+
+	"data":
+	[
+		["2026-10-12 11:32:20", 133501202612, 1322159020601]
+	],
+
+	"rows": 1,
+
+	"rows_before_limit_at_least": 1,
+
+	"statistics":
+	{
+		"elapsed": 0.010546708,
+		"rows_read": 1794,
+		"bytes_read": 109278
+	}
+}

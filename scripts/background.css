@@ -1,0 +1,50 @@
+/* Official Cambrian artwork; animate one layer, preserving the original paths. */
+[data-theme="dark"] {
+  --pattern-ink: #ECDFC3;
+  --pattern-opacity: .1;
+}
+[data-theme="light"] {
+  --pattern-ink: #3B7120;
+  --pattern-opacity: .1;
+}
+.slide-frame { background-image: none; background-color: transparent; }
+.slide-frame::before { background: none; }
+.deck-background {
+  position: fixed; inset: -4%; width: 108%; height: 108%; z-index: 0;
+  pointer-events: none; overflow: hidden; opacity: var(--pattern-opacity);
+  animation: texture-drift 32s ease-in-out infinite alternate;
+  transition: opacity .4s ease;
+}
+.deck-background path { stroke: var(--pattern-ink); transition: stroke .4s ease; }
+@keyframes texture-drift {
+  from { transform: translate(-.8%, -.6%) scale(1); }
+  to { transform: translate(.8%, .6%) scale(1.025); }
+}
+.drifting-leaves {
+  position: fixed; inset: 0; z-index: 0; overflow: hidden;
+  pointer-events: none; color: var(--accent-light);
+}
+.drifting-leaf {
+  position: absolute; top: -60px; width: var(--leaf-size, 36px); aspect-ratio: 64 / 76; opacity: .28;
+  animation: leaf-fall var(--fall-duration, 38s) linear var(--fall-delay, -8s) infinite;
+}
+.drifting-leaf svg { width: 100%; height: 100%; animation: leaf-sway var(--sway-duration, 7s) ease-in-out infinite alternate; }
+.leaf-0 { left: 3%; }
+.leaf-1 { left: 95%; }
+.leaf-2 { left: 88%; }
+.leaf-3 { left: 9%; }
+.leaf-1 svg, .leaf-3 svg { animation-direction: alternate-reverse; animation-delay: -3s; }
+@keyframes leaf-fall {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(100vh + 120px)); }
+}
+@keyframes leaf-sway {
+  from { transform: translateX(-14px) rotate(-25deg); }
+  to { transform: translateX(14px) rotate(30deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .deck-background { animation: none !important; }
+  .drifting-leaves { display: none; }
+  .drifting-leaf, .drifting-leaf svg { animation: none !important; }
+}
+@media print { .deck-background, .drifting-leaves { display: none !important; } }

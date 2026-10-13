@@ -1,0 +1,43 @@
+{
+	"meta":
+	[
+		{
+			"name": "database",
+			"type": "String"
+		},
+		{
+			"name": "bytes",
+			"type": "UInt64"
+		},
+		{
+			"name": "rows",
+			"type": "UInt64"
+		},
+		{
+			"name": "active_parts",
+			"type": "UInt64"
+		}
+	],
+
+	"data":
+	[
+		["solana", 4963606741342, 59626593736, 1782],
+		["eth_base", 955339773198, 19384340674, 811],
+		["system", 792139191471, 75723027760, 1023],
+		["defi_base", 478907095128, 19296675841, 962],
+		["defi_staging", 379469304518, 5945784516, 155],
+		["defi", 208689782345, 5469984820, 166],
+		["default", 498705929, 14873763, 33]
+	],
+
+	"rows": 7,
+
+	"rows_before_limit_at_least": 7,
+
+	"statistics":
+	{
+		"elapsed": 0.022115024,
+		"rows_read": 4932,
+		"bytes_read": 158031
+	}
+}

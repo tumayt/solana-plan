@@ -1,0 +1,103 @@
+<html><head><meta charset="utf-8"><title>Solana data paths: evidence and assumptions</title><style>body{font:18px/1.65 system-ui;max-width:980px;margin:50px auto;padding:25px;color:#182018}h2{margin-top:50px;color:#3b7120}a{color:#3b7120}pre{white-space:pre-wrap;background:#f0efe8;padding:25px;font-size:14px}</style></head><body><h1>Solana data paths: evidence and assumptions</h1><p>12 October 2026 · TB are decimal. Live facts, customer-model projections and planning assumptions are distinguished below.</p><h2>1. Decision</h2><p>Scope: Solana customer delivery, with Meteora DLMM as the first concrete product. Path 2 is a recommendation, not an approved deployment. User-provided operational facts are attributed to the team, not independently verified incidents. Figures use decimal TB (1 TB = 1,000 GB). Live metadata was read on 2026-10-12 around 11:30 UTC. Customer storage models retain their 2026-10-06 horizon. Press N for notes; E for edit/present. All planning estimates exclude an unmeasured full Solana block archive. User clarification: the existing dev team is already responsible for Solana. Keeping it in the background at lower priority for the last six months was a deliberate prioritization decision. This deck proposes revisiting that priority and allocating capacity; it does not propose assigning a new owner.</p><h2>2. Customer</h2><p>R1: ../../cambrian/customer-lhava/quotation/Requirements.md, current requirements. R2: ../../cambrian/customer-lhava/meteora_export/README.md. The February 2025 SOL/USDC sample matched 420/420 returned ledger events and had no missing API events in that sample. The Aug–Sep 2026 sample matched amounts on 9,718 returned events but omitted 4,469 API events; the 30 unmatched transactions checked were rebalances. Only 2/9,165 adds had bins. These are sample results, not global completeness percentages. Strategy per-bin allocations are estimates and do not establish later bin holdings. This distinguishes source trimming from missing decoders and missing product models.</p><h2>3. Current setup</h2><p>U: User facts 1–9. Pinax provides database/indexer/API servers plus Firehose endpoints for Base and Solana for $2,000/month total. Do not allocate the entire invoice to Solana or assume all $2,000 is saved after a Solana cutover. The team reports historical trimming in Pinax and in the Google BigTable/BigQuery sources it evaluated. This is not a claim that every dataset on those Google products is trimmed. Agave onstream has successfully streamed live/historic blocks according to the team; production reliability and retained historical coverage remain unverified. The user reports six months of deliberately lower priority. These issues are the current work backlog; the deck does not establish when each issue arose or attribute every issue to that decision.</p><h2>4. Measured size</h2><p>Q1 database-sizes.json: sum(bytes_on_disk), active system.parts, grouped by database. Solana = 4,963,606,741,342 bytes. Q2 disks.json: total 15,360,858,259,456; free 7,305,587,920,896 bytes. Disk used is 8.06 TB; active parts across all databases total about 7.78 TB. These measures differ because filesystem use includes inactive parts and other files; no exact reconciliation was attempted. Q3 retention.json extracts table TTL and sorting/partition keys. Q4 retention-sizes.json sums table metadata by TTL expression: 2.526 TB at one month, 1.142 TB at one year, 1.213 TB without TTL, 0.084 TB other. Q5 dlmm-size.json excludes meteora_damm prefixes. These are compressed active storage measurements, not unique event counts, full-chain archive sizes or guaranteed export sizes. Table sizes changed slightly between snapshots due to ongoing ingestion. Disk chart: “Other used” is filesystem used minus active Solana parts, about 3.09 TB. It includes all other database data plus system/inactive/filesystem use; it is not an independently measured database group. Percentages are shares of total disk, not shares of Solana.</p><h2>5. History size</h2><p>R3: quotation/estimates/storage_model.py and storage.md in the customer repo. H1 positions = 0.2086 TB; H2 incremental pool-state/fees = 0.3465 TB, total 0.5551 TB. After one year: 0.8704 TB. Includes collected and proposed data, with assumed decoder/state/ledger rows. H2 depends on H1, so add each exactly once. Two serving copies at year one with 30% free disk require 0.8704 × 2 / 0.7 = 2.49 TB aggregate, excluding OS, temporary rebuilds, other products and raw node history. 2023 Meteora is unmeasured: +0–0.3153 TB is a planning sensitivity of zero to one recent annual growth increment, not a hard upper bound. Raw balances: 668 million rows/day × 59.4 compressed bytes/row = 39.68 GB/day; 1,015 days from 2024-01-01 to 2026-10-12 exclusive = 40.27 TB; another 365 days gives 54.76 TB. The customer model uses a slightly lower 39.08 GB/day from its retained buffer. Historical activity is not constant; neither rate proves historical volume. Daily snapshots: 25.33 million changed pairs/day × 49.1 bytes × 365 = 0.454 TB/year. Snapshots cannot substitute for transaction-level balances or fill a deleted past without a historical source.</p><h2>6. Options</h2><p>“GCP” is interpreted as durable Google Cloud Storage export/archive. For a comparable cost scenario, serving ClickHouse and APIs sit on OVH with onstream, not directly on object storage. If serving must also move to GCP, obtain a separate compute/ClickHouse quote and re-estimate latency and transfer charges. A GCS export by itself is not a working customer API. Path 3 preserves useful existing data where export rights permit; it does not imply deleting current data. Each endpoint must publish its verified start date and gaps.</p><h2>7. Path 1</h2><p>Path 1 adjusted central estimate: H1 production positions 13 engineer-days, plus 5 assumed days for infrastructure coordination, ingestion hardening and unification beyond H1, plus 2 assumed days for a 2023 extension = 20. Planning range 15–27.5. All projected person-days are calibrated to 50% of the initial estimates at the user’s request; the source repo baseline is unchanged. Pinax upgrade cost and delivery date remain unknown. Preserve the current validated dataset until the replacement passes coverage and amount checks. Historical source availability remains an external dependency.</p><h2>8. Path 2</h2><p>Path 2 adjusted central estimate = H1 13 days + platform/migration 17.5 assumed days: onstream hardening 6; OVH deployment/security/monitoring 3; GCP export/restore 3; overlap verification and cutover 3; Base dependency discovery and exit planning 2.5. Total 30.5, planning range 20–42.5. This is 50% of the initial person-day estimate. Excludes actual Base rebuilding, separate source procurement, full raw archive engineering and H2 fees. Onstream still needs upgrade rehearsal, finality handling, reconnect/backpressure, checkpoints and recovery. A second collection path is not included in the lean allowance.</p><h2>9. Path 3</h2><p>Path 3 adjusted central estimate = H1 13 minus 2 historical backfill-operation days = 11 for recent-only positions, plus 14 assumed platform/cutover days: onstream hardening 6, OVH deployment 3, archive/restore 2, endpoint limits and cutover 1.5, Base exit discovery 1.5. Total 25, planning range 17.5–35. This is 50% of the initial person-day estimate. Decoder, ledger and validation work remain in scope. Onstream can replay only available historical ledger/metadata; a fresh snapshot does not imply history since 2024. Difficulty finding two-week archives is a team observation, not a network retention guarantee.</p><h2>10. Common work</h2><p>R4: quotation/estimates/mandays.md and mandays_model.py. The 14 engineer-day Meteora prototype is a historical yardstick; its task split is assumed in that repo. H1 already includes missing decoders, ledger materialization, repair/backfill validation and endpoint work; do not charge that work again as a second “unification” project. Proposed stable event identity should include chain, finalized block/slot context, transaction signature and full instruction/event path; exact schema requires validation, because one transaction can contain multiple actions. Per insert-batch-size, replay in batches around 10k–100k rows and watch merge load. Per insert-mutation-avoid-update, prefer versioned corrected rows or replacement tables over frequent whole-part mutations; ReplacingMergeTree merges are eventual and reads must apply the chosen deduplication semantics. Per insert-optimize-avoid-final, do not routinely force OPTIMIZE FINAL. Per schema-partition-lifecycle, design retention around lifecycle partitions for new tables; existing Meteora tables partition only by chain, while live balance/trades tables now use monthly partitions. These are scoped recommendations, not a full schema review. All ClickHouse access here was read-only metadata with 30-second defaults and scan caps on the explicit queries.</p><h2>11. Monthly cost</h2><p>P1 https://cloud.google.com/storage/pricing checked 2026-10-12: illustrative US regional Standard rate $0.000027397/GiB-hour ≈ $0.020/GiB-month at 730 hours. Thus 1 decimal TB ≈ $18.63/month; 0.555 TB ≈ $10.34; current 4.96 TB Solana data ≈ $92/month if exported at the same compressed size. Actual export encoding/compression must be measured. Operations, network egress, retrieval classes and database compute are separate. P2 https://www.ovhcloud.com/en/bare-metal/high-grade/ checked 2026-10-12 lists HGR-SDS-1 2024 from $1,986/month incl. VAT and $1,986 installation in the displayed global locale; 256 GB RAM and six 7.68 TB NVMe drives. This is a database/storage price anchor, not a Solana node recommendation, binding quote or region/currency-normalized comparison. P3 https://docs.anza.xyz/operations/requirements recommends additional RPC resources including 16 cores and 512 GB for all account indexes, separate account/ledger disks, and performance testing. The $1.5–3k node allowance needs a real suitable-hardware quote and benchmark. Lean own-platform budget is $2.7–5.5k + selected archive + B (Base replacement) + transfer/source fees. Two months of Path 2 overlap adds $4k in Pinax invoices, not an assumed two-month completion promise. Extra HA nodes/replicas, labor, tax normalization, setup fees, raw-block archive and historical source fees are excluded. Customer repo $4,000/14 TB is a customer pricing convention, not the actual Pinax cost or a cloud quote.</p><h2>12. Effort</h2><p>Effort calibration: all projected person-days and ranges are 50% of the initial deck estimates, as requested by the user. Adjusted H1 = 13 days, range 8.5–18; incremental H2 = 14 days, range 8.5–19. H1 + H2 = 27 product days before platform work. Central positions+fees totals: Path 1 34, Path 2 44.5, Path 3 39 days. Recent-only fee scope may change. Onstream maintenance reserve is 1–2.5 engineer-days/month, assumed; releases or incidents can exceed it. Path 2 is 6.1 person-weeks at 5 working days/week, or about 4.4 calendar weeks with two engineers at 70% allocation, before dependency and replay delays. Calendar replay, transfer and test-window durations were not halved. Current Pinax cleanup is unmeasured. Labor cost is person-days times the organization’s loaded rate. The historical 14-day prototype and original customer-repo estimates remain unchanged as source evidence, not current planning figures.</p><h2>13. Elapsed time</h2><p>Rate supplied by the user: around 32 historical days per elapsed day. This is an approximate reported rate, not an independently verified sustained benchmark; hardware, source and workload scope were not supplied. Keep the deck baseline of 2024-01-01 through 2026-10-11 inclusive (1,015 days; cutoff 2026-10-12 exclusive). Dedicated replay: 1015/32 = 31.71875 calendar days. Adding 2023 gives 365/32 = 11.40625 additional days, or 1380/32 = 43.125 total days. If 32 is total processing capacity shared with live ingestion, net historical catch-up is 31 days/day and 1015/31 = 32.74 elapsed days. Do not subtract live capacity again if the reported 32 is already historical-only throughput. Assumes continuous operation, available source history and a representative sustained rate. Engineering, transfer, import, validation, retries and downtime are not included in this replay-only calculation; some stages may overlap. Exporting already-decoded data requires a separate export/transfer/import throughput model.</p><h2>14. Decision gates</h2><p>Proposed acceptance approach: stratified windows across 2024, the April 2025 v2 transition, repaired February 2025, and recent rebalance-heavy periods; include nested program calls and known failure examples. Compare expected signatures/action counts, raw token amounts and instruction path coverage against independent evidence where available. Sample agreement alone is not proof of whole-period completeness. Track coverage per date, protocol/version and source, including missing metadata. Require an agreed customer quality threshold instead of reusing the old informal 95–96% estimate as an SLA. Operational gate proposal: 14 days of parallel collection including peak traffic, deliberate restarts, replay verification, restore drill and an upgrade/rollback rehearsal. Fourteen days is a proposed test window, not proven sufficient for every risk. Price high availability explicitly; a second replica alone does not guarantee 50 ms P99.</p><h2>15. Next steps</h2><p>The proposed pilot uses 2.5–4 total engineer-days over a five-working-day checkpoint if staff are available. It is included within the path-specific effort allowances, not additive. No full deployment, vendor cancellation or customer promise is authorized by this deck. The existing dev team already owns Solana; the user reports a deliberate lower priority over the last six months. Decisions required: revised priority and dev-team allocation; budget for the pilot; allocated dev-team capacity for Agave/onstream maintenance; target geography; whether GCP is archive-only or also serving; customer quality threshold; whether 2023 is a separate phase. Sources: R1 Requirements; R2 meteora_export README; R3 storage.py/storage.md; R4 mandays_model.py/mandays.md; Q1–Q5 dated live metadata under evidence; M1 scripts/estimate.py and evidence/estimates.json; P1 Google storage pricing, P2 OVH High Grade, P3 Anza hardware requirements. The source repo was inspected read-only; credentials and transaction payloads are not packaged.</p><h2>Reproduce the model</h2><p>Run <code>python3 scripts/estimate.py</code>. The model reads the bundled metadata snapshots and does not connect to a server.</p><pre>{
+  &quot;units&quot;: &quot;decimal TB; USD unless vendor currency needs confirming; engineering days are person-days&quot;,
+  &quot;live_solana_tb&quot;: 4.963606741342,
+  &quot;disk_total_tb&quot;: 15.360858259456,
+  &quot;disk_free_tb&quot;: 7.305587920896,
+  &quot;meteora_2024_tb&quot;: 0.55509,
+  &quot;meteora_12_month_tb&quot;: 0.87039,
+  &quot;meteora_12_month_two_replicas_30pct_free_tb&quot;: 2.4868285714285716,
+  &quot;raw_balances_tb_day&quot;: 0.0396792,
+  &quot;raw_balances_tb_year&quot;: 14.482907999999998,
+  &quot;raw_balances_2024_flat_rate_tb&quot;: 40.274387999999995,
+  &quot;raw_balances_2023_flat_rate_tb&quot;: 54.757296,
+  &quot;snapshots_tb_year&quot;: 0.45395159500000004,
+  &quot;gcs_us_standard_usd_tb_month&quot;: 18.62645149230957,
+  &quot;gcs_meteora_usd_month&quot;: 10.33935695886612,
+  &quot;gcs_solana_retained_usd_month&quot;: 92.45438019450754,
+  &quot;history_days&quot;: 1015,
+  &quot;replay_rate_historical_days_per_day&quot;: 32,
+  &quot;replay_rate_source&quot;: &quot;User-reported approximate rate; sustained throughput and workload scope not independently verified&quot;,
+  &quot;dedicated_backfill_calendar_days&quot;: {
+    &quot;32x&quot;: 31.71875
+  },
+  &quot;additional_2023_replay_days&quot;: 11.40625,
+  &quot;dedicated_backfill_including_2023_days&quot;: 43.125,
+  &quot;catch_up_days_if_32x_includes_live&quot;: 32.74193548387097,
+  &quot;transfer_hours_at_100Mbps_70pct_efficiency&quot;: {
+    &quot;0.56TB&quot;: 17.77777777777778,
+    &quot;4.96TB&quot;: 157.46031746031747
+  },
+  &quot;path_engineering_days_assumed&quot;: {
+    &quot;1&quot;: {
+      &quot;product&quot;: 13.0,
+      &quot;infra_and_2023&quot;: 7.0,
+      &quot;total&quot;: 20.0,
+      &quot;range&quot;: [
+        15.0,
+        27.5
+      ]
+    },
+    &quot;2&quot;: {
+      &quot;product&quot;: 13.0,
+      &quot;platform_and_migration&quot;: 17.5,
+      &quot;total&quot;: 30.5,
+      &quot;range&quot;: [
+        20.0,
+        42.5
+      ]
+    },
+    &quot;3&quot;: {
+      &quot;product_without_old_backfills&quot;: 11.0,
+      &quot;platform_and_cutover&quot;: 14.0,
+      &quot;total&quot;: 25.0,
+      &quot;range&quot;: [
+        17.5,
+        35.0
+      ]
+    }
+  },
+  &quot;own_platform_monthly_allowance&quot;: {
+    &quot;node&quot;: [
+      1500,
+      3000
+    ],
+    &quot;database_api&quot;: [
+      1000,
+      2000
+    ],
+    &quot;monitoring_backup_misc&quot;: [
+      200,
+      500
+    ],
+    &quot;subtotal&quot;: [
+      2700,
+      5500
+    ]
+  },
+  &quot;exclusions&quot;: [
+    &quot;Base replacement&quot;,
+    &quot;extra HA replicas&quot;,
+    &quot;full raw-block archive&quot;,
+    &quot;historical source fees&quot;,
+    &quot;egress&quot;,
+    &quot;labor&quot;,
+    &quot;tax and setup adjustments&quot;
+  ],
+  &quot;effort_calibration_factor&quot;: 0.5,
+  &quot;incremental_pool_state_fees_engineer_days&quot;: {
+    &quot;total&quot;: 14,
+    &quot;range&quot;: [
+      8.5,
+      19
+    ]
+  },
+  &quot;onstream_maintenance_engineer_days_per_month&quot;: [
+    1,
+    2.5
+  ],
+  &quot;pilot_engineer_days&quot;: [
+    2.5,
+    4
+  ]
+}
+</pre><h2>Primary public references</h2><ul><li><a href="https://cloud.google.com/storage/pricing">Google Cloud Storage pricing</a></li><li><a href="https://www.ovhcloud.com/en/bare-metal/high-grade/">OVH High Grade servers</a></li><li><a href="https://docs.anza.xyz/operations/requirements">Anza hardware requirements</a></li></ul></body></html>

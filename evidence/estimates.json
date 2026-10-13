@@ -1,0 +1,102 @@
+{
+  "units": "decimal TB; USD unless vendor currency needs confirming; engineering days are person-days",
+  "live_solana_tb": 4.963606741342,
+  "disk_total_tb": 15.360858259456,
+  "disk_free_tb": 7.305587920896,
+  "meteora_2024_tb": 0.55509,
+  "meteora_12_month_tb": 0.87039,
+  "meteora_12_month_two_replicas_30pct_free_tb": 2.4868285714285716,
+  "raw_balances_tb_day": 0.0396792,
+  "raw_balances_tb_year": 14.482907999999998,
+  "raw_balances_2024_flat_rate_tb": 40.274387999999995,
+  "raw_balances_2023_flat_rate_tb": 54.757296,
+  "snapshots_tb_year": 0.45395159500000004,
+  "gcs_us_standard_usd_tb_month": 18.62645149230957,
+  "gcs_meteora_usd_month": 10.33935695886612,
+  "gcs_solana_retained_usd_month": 92.45438019450754,
+  "history_days": 1015,
+  "replay_rate_historical_days_per_day": 32,
+  "replay_rate_source": "User-reported approximate rate; sustained throughput and workload scope not independently verified",
+  "dedicated_backfill_calendar_days": {
+    "32x": 31.71875
+  },
+  "additional_2023_replay_days": 11.40625,
+  "dedicated_backfill_including_2023_days": 43.125,
+  "catch_up_days_if_32x_includes_live": 32.74193548387097,
+  "transfer_hours_at_100Mbps_70pct_efficiency": {
+    "0.56TB": 17.77777777777778,
+    "4.96TB": 157.46031746031747
+  },
+  "path_engineering_days_assumed": {
+    "1": {
+      "product": 13.0,
+      "infra_and_2023": 7.0,
+      "total": 20.0,
+      "range": [
+        15.0,
+        27.5
+      ]
+    },
+    "2": {
+      "product": 13.0,
+      "platform_and_migration": 17.5,
+      "total": 30.5,
+      "range": [
+        20.0,
+        42.5
+      ]
+    },
+    "3": {
+      "product_without_old_backfills": 11.0,
+      "platform_and_cutover": 14.0,
+      "total": 25.0,
+      "range": [
+        17.5,
+        35.0
+      ]
+    }
+  },
+  "own_platform_monthly_allowance": {
+    "node": [
+      1500,
+      3000
+    ],
+    "database_api": [
+      1000,
+      2000
+    ],
+    "monitoring_backup_misc": [
+      200,
+      500
+    ],
+    "subtotal": [
+      2700,
+      5500
+    ]
+  },
+  "exclusions": [
+    "Base replacement",
+    "extra HA replicas",
+    "full raw-block archive",
+    "historical source fees",
+    "egress",
+    "labor",
+    "tax and setup adjustments"
+  ],
+  "effort_calibration_factor": 0.5,
+  "incremental_pool_state_fees_engineer_days": {
+    "total": 14,
+    "range": [
+      8.5,
+      19
+    ]
+  },
+  "onstream_maintenance_engineer_days_per_month": [
+    1,
+    2.5
+  ],
+  "pilot_engineer_days": [
+    2.5,
+    4
+  ]
+}

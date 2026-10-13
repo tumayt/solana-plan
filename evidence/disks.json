@@ -1,0 +1,37 @@
+{
+	"meta":
+	[
+		{
+			"name": "name",
+			"type": "String"
+		},
+		{
+			"name": "total_space",
+			"type": "UInt64"
+		},
+		{
+			"name": "free_space",
+			"type": "UInt64"
+		},
+		{
+			"name": "unreserved_space",
+			"type": "UInt64"
+		}
+	],
+
+	"data":
+	[
+		["default", 15360858259456, 7305587920896, 7305587920896]
+	],
+
+	"rows": 1,
+
+	"rows_before_limit_at_least": 1,
+
+	"statistics":
+	{
+		"elapsed": 0.00411884,
+		"rows_read": 1,
+		"bytes_read": 136
+	}
+}
