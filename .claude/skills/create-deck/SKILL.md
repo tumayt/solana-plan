@@ -188,7 +188,7 @@ Always include these print overrides:
 ### JavaScript Engine
 
 The JS engine includes:
-- **Navigation**: `next()`, `prev()`, `goToSlide()`, touch + keyboard. Arrow right reveals all fragments at once then advances; arrow left goes straight to previous slide.
+- **Navigation**: `next()`, `prev()`, `goToSlide()`, touch + keyboard. Every navigation action advances directly to the requested slide with all its content visible, including clicks, keyboard, touch and progress dots.
 - **Edit/Present mode**: `enterEditMode()`, `enterPresentMode()`, `toggleMode()`, fullscreen API
 - **Hide/Delete slides**: `toggleHideSlide()`, `deleteCurrentSlide()`, `findVisibleSlide()`, progress dot sync
 - **Persistence (localStorage)**: Hidden slide state (`saveHidden()`/`loadHidden()`) and text edits (`saveEdits()`/`loadEdits()`) both persist across reloads
@@ -202,8 +202,24 @@ Key patterns:
 - Present mode auto-jumps to nearest visible slide if current is hidden
 - Keyboard handler respects `contenteditable` focus (returns early if editing text)
 - Press `e` to toggle edit/present mode
-- `next()` reveals all fragments at once via `showAllFragments()`, then advances to next slide
+- `next()` advances immediately; `goToSlide()` calls `showAllFragments()` on the destination. Never consume a navigation action just to reveal content.
 - `prev()` goes directly to the previous slide (no fragment-by-fragment reversal)
+
+### Slide Anchors (Required)
+
+Every generated deck must support direct slide links, such as `deck.html#common`, using the anchor implementation in [the canonical template](../../src/deck/decks/agentic-consumption.html).
+
+1. Give every slide a unique, stable `data-anchor` slug. Use lowercase words separated by hyphens, such as `decision`, `common`, `path-2`, and `next-steps`. Preserve existing slugs when editing headings or reordering slides; resolve duplicate slugs explicitly.
+   ```html
+   <div class="slide" data-slide="9" data-anchor="common" data-title="Common work">
+     <div><!-- All slide content --></div>
+   </div>
+   ```
+2. Use `slideAnchor()`, `syncSlideAnchor()`, and `followSlideAnchor()` from the template. Resolve anchors against the current slide array, not a fixed numeric index. Do not assign matching DOM IDs: native anchor scrolling can displace the fixed presentation layout.
+3. After initialization, decode the URL hash safely and open the matching visible slide with all fragments revealed. Run this after navigation state and controls are initialized. Empty, unknown, malformed, hidden, or deleted targets must not crash the deck or reveal a hidden slide; keep a valid visible slide selected.
+4. Call `syncSlideAnchor()` after changing slides. Route previous/next buttons, keyboard, touch and progress dots through the same navigation path. Use `history.pushState()` for a new slide and `replaceState()` for initial URL normalization. Only write history when the target hash differs from the current hash.
+5. Handle both `hashchange` and `popstate` so pasted hashes and browser Back/Forward restore the correct slide. Following an existing history entry must not create another entry.
+6. Verify a direct `#common`-style link, refresh on that slide, one-click next/previous, a progress-dot jump, a manually changed hash, and browser Back/Forward. Check that the URL and active slide agree and all destination content is visible. Also check unknown and malformed hashes and hidden/deleted slide targets.
 
 ### Auto-Scale (Dynamic Text Sizing)
 
@@ -230,7 +246,7 @@ function autoScaleSlide(slideEl) {
 
 **When to call it:**
 - `goToSlide()` and `prev()` — after setting active slide
-- Init — after `buildFragmentQueue(slides[0])`
+- Init — after `showAllFragments(slides[0])`
 - `enterPresentMode()` — `setTimeout(() => autoScaleSlide(...), 100)` (after fullscreen activates)
 - `fullscreenchange` event — `setTimeout(() => autoScaleSlide(...), 100)`
 - `window resize` event
@@ -249,7 +265,7 @@ function autoScaleSlide(slideEl) {
 ### Core CSS, Body Structure, and Component Catalog
 
 For the complete reference implementation of all features, see existing production decks:
-- `.claude/skills/src/deck/decks/agentic-consumption.html` (canonical reference — v2 typography, all features)
+- `.claude/src/deck/decks/agentic-consumption.html` (canonical reference — v2 typography, all features)
 
 Component catalog: KPI stats, tables, cards, timelines, status cards, action cards, diff cards, etc.
 
@@ -465,7 +481,7 @@ Use for showing data flow through processing layers: source → hub → output. 
 ## Content Guidelines
 
 - **Cambrian green** (`#4b9328`) is the accent. Use `.green` class or `var(--accent)`.
-- Use `class="fragment"` on every element that should animate in progressively. Aim for 3-6 fragments per slide.
+- If using `class="fragment"` for entry transitions, reveal every fragment together on slide entry and on initial load. Content must never require an extra click to become visible.
 - Keep text concise. Slides are for presenting, not reading.
 - Brand voice: confident, precise, minimal. No marketing fluff.
 - Aim for 8-15 slides. Fewer is better.
@@ -474,3 +490,9 @@ Use for showing data flow through processing layers: source → hub → output. 
 - **Prefer diagrams over text** for protocol flows and architecture. One diagram replaces paragraphs of explanation.
 - All diagram CSS uses `var()` theme variables and `transition` for seamless dark/light switching.
 - **Always include** the toolbar (mode toggle + export + theme), slide controls (hide/delete), and persistence JS engine. These are standard features in every deck.
+
+## Learnings
+
+One click or arrow-key press must advance one slide with its full content visible. Reveal fragments on initial load and in `goToSlide()`, and remove fragment-reveal early returns from `next()`. Verify forward/back navigation and direct progress-dot jumps on a generated deck; updating CSS visibility alone leaves the extra navigation step in place.
+
+Slide deep links are standard deck behavior; follow the required Slide Anchors implementation and verification steps above.

@@ -1233,30 +1233,36 @@ body.edit-mode .slide.slide-hidden.active { outline: 2px dashed rgba(201,135,58,
     slides[current].classList.add('active');
     progressEl.children[current].classList.add('active');
     updateCounter();
-    buildFragmentQueue(slides[current]);
+    showAllFragments(slides[current]);
     updateSlideControls();
     autoScaleSlide(slides[current]);
+    syncSlideAnchor();
   }
 
   function next() {
-    if (fragmentIndex < fragmentQueue.length) { showAllFragments(slides[current]); return; }
     const nextIdx = (currentMode === 'edit') ? current + 1 : findVisibleSlide(current, 1);
     if (nextIdx >= 0 && nextIdx < totalSlides) goToSlide(nextIdx);
   }
 
   function prev() {
     const prevIdx = (currentMode === 'edit') ? current - 1 : findVisibleSlide(current, -1);
-    if (prevIdx >= 0) {
-      slides[current].classList.remove('active');
-      progressEl.children[current].classList.remove('active');
-      current = prevIdx;
-      slides[current].classList.add('active');
-      progressEl.children[current].classList.add('active');
-      updateCounter();
-      showAllFragments(slides[current]);
-      updateSlideControls();
-      autoScaleSlide(slides[current]);
-    }
+    if (prevIdx >= 0) goToSlide(prevIdx);
+  }
+
+  function slideAnchor(slide) {
+    return slide.dataset.anchor || 'slide-' + (Number(slide.dataset.slide) + 1);
+  }
+
+  function syncSlideAnchor(replace = false) {
+    const hash = '#' + encodeURIComponent(slideAnchor(slides[current]));
+    if (location.hash !== hash) history[replace ? 'replaceState' : 'pushState'](null, '', hash);
+  }
+
+  function followSlideAnchor() {
+    let anchor;
+    try { anchor = decodeURIComponent(location.hash.slice(1)); } catch { return; }
+    const index = anchor ? slides.findIndex(slide => slideAnchor(slide) === anchor) : 0;
+    if (index >= 0 && !hiddenSlides.has(index)) goToSlide(index);
   }
 
   window.next = next;
@@ -1279,9 +1285,8 @@ body.edit-mode .slide.slide-hidden.active { outline: 2px dashed rgba(201,135,58,
   if (savedTheme) { document.documentElement.setAttribute('data-theme', savedTheme); document.getElementById('themeLabel').textContent = savedTheme; }
 
   updateCounter();
-  buildFragmentQueue(slides[0]);
+  showAllFragments(slides[0]);
   autoScaleSlide(slides[0]);
-  setTimeout(() => { revealNextFragment(); let i = 1; const iv = setInterval(() => { if (!revealNextFragment()) clearInterval(iv); i++; }, 120); }, 300);
 
   window.addEventListener('resize', () => { autoScaleSlide(slides[current]); });
 
@@ -1490,6 +1495,10 @@ body.edit-mode .slide.slide-hidden.active { outline: 2px dashed rgba(201,135,58,
     else if (e.key === 'End') { e.preventDefault(); goToSlide(totalSlides - 1); }
     else if (e.key === 'e' && !e.ctrlKey && !e.metaKey) { toggleMode(); }
   });
+  window.addEventListener('hashchange', followSlideAnchor);
+  window.addEventListener('popstate', followSlideAnchor);
+  followSlideAnchor();
+  syncSlideAnchor(true);
 })();
 </script>
 </body>

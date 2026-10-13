@@ -33,3 +33,7 @@ python3 -m http.server 8000 --bind 127.0.0.1
 Open [http://127.0.0.1:8000/solana-data-paths.html](http://127.0.0.1:8000/solana-data-paths.html) in your browser. The [sources and assumptions](http://127.0.0.1:8000/sources-and-assumptions.html) page is served alongside the deck.
 
 Keep the terminal running while viewing the deck. Press `Ctrl+C` to stop the server. If port 8000 is already in use, choose another port in the command and browser URL.
+
+### Link to a slide
+
+Add a slide anchor to the URL, for example [Common work](http://127.0.0.1:8000/solana-data-paths.html#common). Other examples are `#decision`, `#path-2`, `#elapsed-time`, and `#next-steps`. The URL updates as you navigate, so you can copy it to share the current slide. Browser Back and Forward restore previous slides.
